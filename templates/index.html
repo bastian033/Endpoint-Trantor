@@ -4,27 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Búsqueda de Empresas</title>
-    <link rel="stylesheet" href="/static/css/estilos.css">
-    <script defer src="/static/js/script.js"></script>
-    <style>
-        .titulo {
-            text-align: center;
-            margin-top: 20px;
-            color: red;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/index.css">
 </head>
 <body>
-    <header>
-        <h1 id="titulo" style="color: blue; text-align: center;">Búsqueda de Empresas</h1>
+
+    <header class="header py-3 px-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M9 21V3m0 0L3 10m6-7l6 7" />
+                </svg>
+                <span class="fw-bold fs-4 text-primary">Trantor</span>
+            </div>
+        </div>
     </header>
-    <main>
-        <form id="searchForm">
-            <label for="razon_social">Ingrese la Razón Social de la empresa:</label>
-            <input type="text" id="razon_social" name="razon_social" placeholder="Ejemplo: Directorio EmpresasAgricolas.cl SpA" required>
-            <button type="submit">Buscar</button>
-        </form>
-        <div id="results"></div>
+
+    <main class="main">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-dark">Busca una empresa por RUT o nombre</h1>
+            <p class="text-muted">Accede a información detallada de empresas chilenas de manera rápida y sencilla</p>
+        </div>
+
+        <div class="card">
+            <!-- Solicitud Get al endpoint /empresa/buscar -->
+            <form action="/api/empresa/buscar" method="get"> 
+                <div class="mb-3">
+                    <label for="tipo_busqueda" class="form-label">Buscar por:</label>
+                    <select id="tipo_busqueda" name="tipo_busqueda" class="form-select">
+                        <option value="razon_social">Razón Social</option>
+                        <option value="rut">RUT</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="valor" class="form-label">Valor:</label>
+                    <input type="text" id="valor" name="valor" class="form-control" placeholder="Ingresa el valor" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">Buscar</button>
+                </div>
+            </form>
+        </div>
+
+        <section class="row mt-5 gx-4 gy-4 search-info">
+            <div class="col-md-4">
+              <div class="bg-white p-4 rounded shadow-sm border">
+                <h5 class="fw-bold mb-2">Información actualizada</h5>
+                <p class="text-muted">Accede a datos actualizados del Diario Oficial, SII y otras fuentes públicas.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bg-white p-4 rounded shadow-sm border">
+                <h5 class="fw-bold mb-2">Trazabilidad legal</h5>
+                <p class="text-muted">Consulta el historial legal y documentación relevante de las empresas.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="bg-white p-4 rounded shadow-sm border">
+                <h5 class="fw-bold mb-2">Alerta de cambios</h5>
+                <p class="text-muted">Recibe notificaciones cuando la información de una empresa cambie.</p>
+              </div>
+            </div>
+          </section>
     </main>
+
+    <footer class="footer">
+        <p>© 2025 Trantor. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>
