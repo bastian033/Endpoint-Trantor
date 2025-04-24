@@ -14,16 +14,16 @@ def buscar_empresa():
     valor = request.args.get('valor')
 
     if not tipo_busqueda or not valor:
-        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de búsqueda y proporcionar un valor.")
+        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de busqueda y proporcionar un valor.")
 
     filtro = {}
     if tipo_busqueda == "razon_social":
-        filtro["Razon Social"] = {"$regex": valor, "$options": "i"}  # Búsqueda insensible a mayúsculas
+        filtro["Razon Social"] = {"$regex": valor, "$options": "i"}  # busqueda insensible a mayusculas
     elif tipo_busqueda == "rut":
         valor = normalizar_rut(valor)
         filtro["RUT"] = valor
     else:
-        return render_template("resultados.html", resultados=None, mensaje="Tipo de búsqueda no válido.")
+        return render_template("resultados.html", resultados=None, mensaje="Tipo de busqueda no valido.")
 
     resultados = buscar_en_base_datos(filtro)
 
@@ -45,5 +45,4 @@ def buscar_en_base_datos(filtro):
     return resultados_totales
 
 def normalizar_rut(rut):
-    """Normalizar el RUT eliminando puntos y espacios."""
-    return rut.replace(".", "").replace(" ", "").strip()
+    return rut.replace(".", "").replace(" ", "").strip() #Para quitar puntos y espacios
