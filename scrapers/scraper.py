@@ -144,7 +144,7 @@ class DiarioOficialScraper:
 
             documento_existente = coleccion.find_one({"nombre_archivo": nombre_archivo})
             if documento_existente:
-                print(f"El archivo '{nombre_archivo}' ya existe en la base de datos. Saltando inserción.")
+                print(f"El archivo '{nombre_archivo}' ya existe en la base de datos. Saltando insercion.")
                 return texto_completo
 
             documento = {

@@ -18,18 +18,18 @@ def buscar_empresa():
 
     filtro = {}
     if tipo_busqueda == "razon_social":
-        filtro["Razon Social"] = {"$regex": valor, "$options": "i"}  # busqueda insensible a mayusculas
+        filtro["Razon Social"] = {"$regex": valor, "$options": "i"}  # Busqueda insensible a mayusculas
     elif tipo_busqueda == "rut":
         valor = normalizar_rut(valor)
         filtro["RUT"] = valor
     else:
-        return render_template("resultados.html", resultados=None, mensaje="Tipo de busqueda no valido.")
+        return render_template("resultados.html", resultados=None, mensaje="tipo de busqueda no valido.")
 
     resultados = buscar_en_base_datos(filtro)
 
     if resultados:
         return render_template("resultados.html", resultados=resultados)
-    return render_template("resultados.html", resultados=None, mensaje="No se encontraron resultados.")
+    return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
 
 def buscar_en_base_datos(filtro):
     colecciones = [f"DatosGob{anio}" for anio in range(2013, 2026)]
@@ -45,4 +45,30 @@ def buscar_en_base_datos(filtro):
     return resultados_totales
 
 def normalizar_rut(rut):
-    return rut.replace(".", "").replace(" ", "").strip() #Para quitar puntos y espacios
+    return rut.replace(".", "").replace(" ", "").strip()
+
+
+"----------------------------------------------------------------------------------------------"
+
+
+@empresas.route("/empresa/subir_info/", methods=["POST"])
+def subir_info_empresa():
+    datos = request.get_json()
+    coleccion = db["EmpresasRevisadas"]
+    campos_faltantes = []
+
+    try:
+        for campo in ["rut", "razon_social"]:
+            if campo not in datos:
+                campos_faltantes.append(campo)
+        
+        if campos_faltantes:
+            return jsonify({"error": f"faltan campos: {', '.join(campos_faltantes)}"}), 400
+
+        resultado = coleccion.insert_one(datos)
+        return jsonify({"Listo!": "Info agregada!" })
+
+    except Exception as e:
+        return jsonify({"error":e})
+
+
