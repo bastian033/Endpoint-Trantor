@@ -1,19 +1,27 @@
 from flask import Flask, Blueprint, jsonify, request, render_template
+from dotenv import load_dotenv
 from db import db
 import requests
+import os
+
+load_dotenv()  # Cargar las variables de entorno desde el archivo .env
 
 # blueprints es para organizae los modulos de los endpoints
 # jsonify es para convertir los datos a formato json, para que los entienda el frontend
 # request es para obtener los datos que envia el frontend
 # db es la conexion con la base de datos
 
-TURNSTILE_SECRET_KEY = "0x4AAAAAABXisJBaUzfUpc1ROoVAMEiSCF4"
+TURNSTILE_SECRET_KEY =  os.getenv("TURNSTILE_SECRET_KEY")
+if not TURNSTILE_SECRET_KEY:
+    print(dict(os.environ))
+    raise Exception("La variable de entorno TURNSTILE_SECRET_KEY no está definida.")
+
 empresas = Blueprint("empresas", __name__) # Crear un grupo de endpoints para las empresas
 
 @empresas.route("/empresa/buscar", methods=["GET"])
 def buscar_empresa():
 
-    # ✅ Validar CAPTCHA de Turnstile
+    #  Validar CAPTCHA de Turnstile
     token = request.args.get('cf-turnstile-response')  # Turnstile manda esto
 
     if not token:
