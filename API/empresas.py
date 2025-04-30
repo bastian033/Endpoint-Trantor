@@ -1,15 +1,45 @@
 from flask import Flask, Blueprint, jsonify, request, render_template
 from db import db
+import requests
 
 # blueprints es para organizae los modulos de los endpoints
 # jsonify es para convertir los datos a formato json, para que los entienda el frontend
 # request es para obtener los datos que envia el frontend
 # db es la conexion con la base de datos
 
+TURNSTILE_SECRET_KEY = "0x4AAAAAABXisJBaUzfUpc1ROoVAMEiSCF4"
 empresas = Blueprint("empresas", __name__) # Crear un grupo de endpoints para las empresas
 
 @empresas.route("/empresa/buscar", methods=["GET"])
 def buscar_empresa():
+
+    # ✅ Validar CAPTCHA de Turnstile
+    token = request.args.get('cf-turnstile-response')  # Turnstile manda esto
+
+    if not token:
+        return render_template("resultados.html", resultados=None, mensaje="Debes resolver el Captcha.")
+
+    url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    data = {
+        'secret': TURNSTILE_SECRET_KEY,
+        'response': token
+    }
+
+    try:
+        resp = requests.post(url, data=data)
+        resultado = resp.json()
+        if not resultado.get("success"):
+            return render_template("resultados.html", resultados=None, mensaje="Captcha inválido. Intenta de nuevo.")
+    except Exception as e:
+        return render_template("resultados.html", resultados=None, mensaje="Error al verificar Captcha.")
+
+    # ✅ Si pasó el Captcha, continua tu lógica original:
+    tipo_busqueda = request.args.get('tipo_busqueda')
+    valor = request.args.get('valor')
+
+    if not tipo_busqueda or not valor:
+        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de búsqueda y proporcionar un valor.")
+
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
 
