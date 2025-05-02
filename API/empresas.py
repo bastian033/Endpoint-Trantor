@@ -21,7 +21,7 @@ empresas = Blueprint("empresas", __name__) # Crear un grupo de endpoints para la
 @empresas.route("/empresa/buscar", methods=["GET"])
 def buscar_empresa():
 
-    #  Validar CAPTCHA de Turnstile
+    #  Validar CAPTCHA 
     token = request.args.get('cf-turnstile-response')  # Turnstile manda esto
 
     if not token:
@@ -29,24 +29,23 @@ def buscar_empresa():
 
     url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
     data = {
-        'secret': TURNSTILE_SECRET_KEY,
-        'response': token
-    }
+         'secret': TURNSTILE_SECRET_KEY,
+         'response': token
+     }
 
     try:
         resp = requests.post(url, data=data)
         resultado = resp.json()
         if not resultado.get("success"):
-            return render_template("resultados.html", resultados=None, mensaje="Captcha inválido. Intenta de nuevo.")
+            return render_template("resultados.html", resultados=None, mensaje="Captcha invalido. Intenta de nuevo.")
     except Exception as e:
-        return render_template("resultados.html", resultados=None, mensaje="Error al verificar Captcha.")
+        return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
 
-    # ✅ Si pasó el Captcha, continua tu lógica original:
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
 
     if not tipo_busqueda or not valor:
-        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de búsqueda y proporcionar un valor.")
+        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de busqueda y proporcionar un valor.")
 
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
@@ -56,10 +55,21 @@ def buscar_empresa():
 
     filtro = {}
     if tipo_busqueda == "razon_social":
-        filtro["Razon Social"] = {"$regex": valor, "$options": "i"}  # Busqueda insensible a mayusculas
+        filtro = { # Busqueda insensible a mayusculas
+        "$or": [
+            {"Razon Social": {"$regex": valor, "$options": "i"}},
+            {"razon_social": {"$regex": valor, "$options": "i"}},
+            {"razonSocial": {"$regex": valor, "$options": "i"}}
+        ]
+    }  
     elif tipo_busqueda == "rut":
         valor = normalizar_rut(valor)
-        filtro["RUT"] = valor
+        filtro = {
+        "$or": [
+            {"RUT": valor},
+            {"rut": valor}
+        ]
+    }
     else:
         return render_template("resultados.html", resultados=None, mensaje="tipo de busqueda no valido.")
 
@@ -70,17 +80,22 @@ def buscar_empresa():
     return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
 
 def buscar_en_base_datos(filtro):
-    colecciones = [f"DatosGob{anio}" for anio in range(2013, 2026)]
+    colecciones = db.list_collection_names()
     resultados_totales = []
+    try:
+        for coleccion_nombre in colecciones:
+            coleccion = db[coleccion_nombre]
+            resultados = list(coleccion.find(filtro))
+            print(f"Buscando en {coleccion_nombre} - encontrados: {len(resultados)}")
+            for resultado in resultados:
+                resultado["_id"] = str(resultado["_id"])
+                resultados_totales.append(resultado)
 
-    for coleccion_nombre in colecciones:
-        coleccion = db[coleccion_nombre]
-        resultados = list(coleccion.find(filtro))
-        for resultado in resultados:
-            resultado["_id"] = str(resultado["_id"])  # convertir ObjectId a string
-            resultados_totales.append(resultado)
+        return resultados_totales
 
-    return resultados_totales
+    except Exception as e:
+        print(f"Error al buscar: {e}")
+        return None
 
 def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()

@@ -26,63 +26,45 @@ class SII_Scraper:
         driver.get("https://www.sii.cl/sobre_el_sii/nominapersonasjuridicas.html")
         fuente_general = "https://www.sii.cl/sobre_el_sii/nominapersonasjuridicas.html"
 
-        # Ruta del archivo donde se guarda la última fecha procesada
-        fecha_actual_path = os.path.join(self.ruta_descarga, "fecha_actual_sii.txt")
-        fecha_guardada = None
-
-        if os.path.exists(fecha_actual_path):
-            with open(fecha_actual_path, "r") as f:
-                fecha_guardada = f.read().strip()
-
         try:
             div_contenido = WebDriverWait(driver, 15).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "col-sm-9.contenido"))
             )
 
             for li in div_contenido.find_elements(By.TAG_NAME, "li"):
-                texto_li = li.text
-                coincidencia = re.search(r'Actualización:\s*(\w+\s+\d{4})', texto_li) #aca el patron para detectar la fecha
+                for url in li.find_elements(By.TAG_NAME, "a"):
+                    enlaces = url.get_attribute("href")
+                    respuesta = requests.get(enlaces)
+                    for fecha in li.find_elements(By.CLASS_NAME, "fecha-actualizacion"):
+                        fecha_actualizacion = fecha.text.strip()
+                        patron = "Actualización:\s*(\w+\s+\d{4})"
+                        resultado = re.search(patron, fecha_actualizacion)
+                        if resultado:
+                            busqueda_fecha_ac = resultado.group(1)
 
-                fecha_actual = None
-                if coincidencia:
-                    fecha_actual = coincidencia.group(1).strip().replace(" ", "_").lower()
+                        #FALTA IMPLEMENTAR LA PARTE DE LA FECHA
 
-                if fecha_actual:
-                    if fecha_actual != fecha_guardada:
-                        print(f"nueva actualizacion encontrada: {fecha_actual}")
 
-                        for url in li.find_elements(By.TAG_NAME, "a"):
-                            enlace = url.get_attribute("href")
-                            respuesta = requests.get(enlace)
 
-                            if respuesta.status_code == 200:
-                                nombre_txt = url.text.strip()
-                                ruta_zip = os.path.join(self.ruta_descarga, nombre_txt)
-                                with open(ruta_zip, "wb") as archivo:
-                                    archivo.write(respuesta.content)
-                                print(f"Descargado: {ruta_zip}")
-
-                                ruta_extraida = os.path.join(self.ruta_descarga, "extraidos")
-                                self.limpiar_carpeta(ruta_extraida)
-                                self.extraer_zip(ruta_zip, ruta_extraida)
-
-                                for archivo in os.listdir(ruta_extraida):
-                                    if archivo.endswith(".txt"):
-                                        ruta_txt = os.path.join(ruta_extraida, archivo)
-                                        self.subir_txt_a_mongodb(ruta_txt, fuente_general)
-
-                                with open(fecha_actual_path, "w") as f:
-                                    f.write(fecha_actual)
-                                print(f"Fecha actualizada guardada: {fecha_actual}")
-                            else:
-                                print(f"Error al descargar: {enlace}")
-                    else:
-                        print(f"Ya se proceso la fecha: {fecha_actual}")
-                else:
-                    print("No se pudo extraer la fecha de <li>.")
+                    if respuesta.status_code == 200:
+                        nomina = os.path.join(self.ruta_descarga, url.text.strip())
+        
+                        with open(nomina, "wb") as archivo:  
+                            archivo.write(respuesta.content)
+                        print(f"descargado: {nomina}")
+                        
+                        ruta_extraida = os.path.join(self.ruta_descarga, "extraidos")
+                        self.limpiar_carpeta(ruta_extraida)
+                        self.extraer_zip(nomina, ruta_extraida)
+                        
+                        for archivo in os.listdir(ruta_extraida):
+                            if archivo.endswith(".txt"): 
+                                ruta_txt = os.path.join(ruta_extraida, archivo)
+                                self.subir_txt_a_mongodb(ruta_txt, fuente_general)
 
         except Exception as e:
             print(f"Error: {e}")
+
         finally:
             driver.quit()
 
