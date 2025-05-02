@@ -14,7 +14,7 @@ class transformar_txt_a_json:
             print(f"procesando: {ruta}")
             for chunk in pd.read_csv(ruta, sep="\t", chunksize=self.tamaño_chunk, engine="python"):
                 data = chunk.to_dict(orient="records")
-                yield data
+                yield data #Funciona como el return pero devuelve por partes, no todo de una vez
     
 
 
