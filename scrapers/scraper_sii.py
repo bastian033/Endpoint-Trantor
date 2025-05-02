@@ -83,12 +83,10 @@ class SII_Scraper:
                 coleccion = db[nombre_coleccion]
 
                 transformador = transformar_txt_a_json([ruta_txt])
-                jsons = transformador.convertir_txt_a_json()
-                
-                for doc in jsons:
-                    doc["fuente"] = fuente
-
-                self.insertar_en_lotes(coleccion, jsons)
+                for lote in transformador.convertir_txt_a_json():
+                    for doc in lote:
+                        doc["fuente"] = fuente
+                    self.insertar_en_lotes(coleccion, lote)
 
             except Exception as e:
                 print(f"Error al subir a MongoDB: {e}")
@@ -96,7 +94,7 @@ class SII_Scraper:
             finally:
                 cliente.close()
 
-    def insertar_en_lotes(self,coleccion, documentos, tamaño_lote=50):
+    def insertar_en_lotes(self,coleccion, documentos, tamaño_lote=30):
         for i in range(0, len(documentos), tamaño_lote):
             lote = documentos[i:i + tamaño_lote]
             try:

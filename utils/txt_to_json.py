@@ -3,25 +3,18 @@ import json
 
 class transformar_txt_a_json:
 
-    def __init__(self, rutas_archivos):
+    def __init__(self, rutas_archivos, tamaño_chunk=10000):
         self.rutas_archivos = rutas_archivos
+        self.tamaño_chunk = tamaño_chunk
 
 
     def convertir_txt_a_json(self):
 
-        jsons = []
-
         for ruta in self.rutas_archivos:
-
-            df = pd.read_csv(ruta, sep="\t", engine="python")
-
-            jsons_str = df.to_json(orient="records")
-
-            data = json.loads(jsons_str)
-
-            jsons.extend(data)
-
-        return jsons
+            print(f"procesando: {ruta}")
+            for chunk in pd.read_csv(ruta, sep="\t", chunksize=self.tamaño_chunk, engine="python"):
+                data = chunk.to_dict(orient="records")
+                yield data
     
 
 
