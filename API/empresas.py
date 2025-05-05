@@ -31,7 +31,7 @@ def buscar_empresa():
     data = {
          'secret': TURNSTILE_SECRET_KEY,
          'response': token
-     }
+    }
 
     try:
         resp = requests.post(url, data=data)
@@ -39,7 +39,7 @@ def buscar_empresa():
         if not resultado.get("success"):
             return render_template("resultados.html", resultados=None, mensaje="Captcha invalido. Intenta de nuevo.")
     except Exception as e:
-        return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
+       return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
 
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
@@ -111,7 +111,7 @@ def subir_info_empresa():
     campos_faltantes = []
 
     try:
-        for campo in ["rut", "razon_social"]:
+        for campo in ["RUT", "Razon Social"]:
             if campo not in datos:
                 campos_faltantes.append(campo)
         

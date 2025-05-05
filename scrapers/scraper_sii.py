@@ -10,7 +10,6 @@ import zipfile
 import os # sistema operativo
 import sys
 import re # para expresiones regulares
-import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # para que pueda importar desde utils
 from utils.txt_to_json import transformar_txt_a_json
@@ -37,10 +36,9 @@ class SII_Scraper:
                     respuesta = requests.get(enlaces)
                     for fecha in li.find_elements(By.CLASS_NAME, "fecha-actualizacion"):
                         fecha_actualizacion = fecha.text.strip()
-                        patron = "Actualización:\s*(\w+\s+\d{4})"
+                        patron = r"\(Actualización:\s+([a-zA-Z]+)\s+(\d{4})\)"
                         resultado = re.search(patron, fecha_actualizacion)
-                        if resultado:
-                            busqueda_fecha_ac = resultado.group(1)
+
 
                         #FALTA IMPLEMENTAR LA PARTE DE LA FECHA
 
