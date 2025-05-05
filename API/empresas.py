@@ -34,7 +34,17 @@ def buscar_empresa():
     }
 
     try:
-        resp = requests.post(url, data=data)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        resp = requests.post(url, data=data, headers=headers)
+
+        print("Token recibido:", token)
+        print("Respuesta de Turnstile:", resp.text)
+
+
+        # Verificar que la respuesta sea JSON
+        if 'application/json' not in resp.headers.get('Content-Type', ''):
+            return render_template("resultados.html", resultados=None, mensaje="Respuesta inválida del servidor CAPTCHA.")
+        
         resultado = resp.json()
         if not resultado.get("success"):
             return render_template("resultados.html", resultados=None, mensaje="Captcha invalido. Intenta de nuevo.")
