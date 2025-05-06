@@ -101,7 +101,7 @@ def buscar_en_base_datos(filtro):
             print(f"Buscando en {coleccion_nombre} - encontrados: {len(resultados)}")
             for resultado in resultados:
                 resultado["_id"] = str(resultado["_id"])
-                resultado: Dict[str, Any] = {}
+                #resultado: Dict[str, Any] = {}
                 # Esto es para normalizar y evitar que el rut y la razon social se muestren en 'otros campos'
                 resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
                 resultados_totales.append(resultado_normalizado)
