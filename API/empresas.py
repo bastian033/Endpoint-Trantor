@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from db import db
 import requests
 import os
-from typing import Dict, Any
+import unicodedata
 
 
 load_dotenv()  # Cargar las variables de entorno desde el archivo .env
@@ -109,7 +109,7 @@ def buscar_en_base_datos(tipo_busqueda, valor):
                 resultado["_id"] = str(resultado["_id"])
                 #resultado: Dict[str, Any] = {}
                 # Esto es para normalizar y evitar que el rut y la razon social se muestren en 'otros campos'
-                resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
+                resultado_normalizado = {normalizar_razon_social(key): value for key, value in resultado.items()}
                 resultados_totales.append(resultado_normalizado)
 
         return resultados_totales
@@ -121,6 +121,11 @@ def buscar_en_base_datos(tipo_busqueda, valor):
 def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()
 
+def normalizar_razon_social(razon_social):
+    return "".join(
+        c for c in unicodedata.normalize("NFD", razon_social.lower())
+        if unicodedata.category(c) != "Mn"
+    )
 
 "----------------------------------------------------------------------------------------------"
 
