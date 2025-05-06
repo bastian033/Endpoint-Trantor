@@ -80,9 +80,9 @@ def buscar_en_base_datos(tipo_busqueda, valor):
         if tipo_busqueda == "razon_social":
             filtro = {
                 "$or":[
-                    {normalizar_razon_social("Razon Social"): {"$regex": valor, "$options": "i"}},
-                    {normalizar_razon_social("razon_social"): {"$regex": valor, "$options": "i"}},
-                    {normalizar_razon_social("razon social"): {"$regex": valor, "$options": "i"}},
+                    {"Razon Social": {"$regex": valor, "$options": "i"}},
+                    {"razon_social": {"$regex": valor, "$options": "i"}},
+                    {"razon social": {"$regex": valor, "$options": "i"}},
                 ]
             }
         elif tipo_busqueda == "rut":
@@ -109,7 +109,7 @@ def buscar_en_base_datos(tipo_busqueda, valor):
                 resultado["_id"] = str(resultado["_id"])
                 #resultado: Dict[str, Any] = {}
                 # Esto es para normalizar y evitar que el rut y la razon social se muestren en 'otros campos'
-                resultado_normalizado = {normalizar_razon_social(key): value for key, value in resultado.items()}
+                resultado_normalizado = {key.lower(): value for key , value in resultado.items()}
                 resultados_totales.append(resultado_normalizado)
 
         return resultados_totales
