@@ -65,35 +65,41 @@ def buscar_empresa():
     if not tipo_busqueda or not valor:
         return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de busqueda y proporcionar un valor.")
 
-    filtro = {}
-    if tipo_busqueda == "razon_social":
-        filtro = { # Busqueda insensible a mayusculas
-        "$or": [
-            {"Razon Social": {"$regex": valor, "$options": "i"}},
-            {"razon_social": {"$regex": valor, "$options": "i"}},
-            {"razonSocial": {"$regex": valor, "$options": "i"}}
-        ]
-    }  
-    elif tipo_busqueda == "rut":
-        valor = normalizar_rut(valor)
-        filtro = {
-        "$or": [
-            {"RUT": valor},
-            {"rut": valor}
-        ]
-    }
-    else:
-        return render_template("resultados.html", resultados=None, mensaje="tipo de busqueda no valido.")
-
-    resultados = buscar_en_base_datos(filtro)
+    resultados = buscar_en_base_datos(tipo_busqueda, valor)
 
     if resultados:
         return render_template("resultados.html", resultados=resultados)
     return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
 
-def buscar_en_base_datos(filtro):
+def buscar_en_base_datos(tipo_busqueda, valor):
     colecciones = db.list_collection_names()
     resultados_totales = []
+
+    try:
+        filtro = {}
+        if tipo_busqueda == "razon_social":
+            filtro = {
+                "$or":[
+                    {"Razon Social": {"regex": valor, "$options": "i"}},
+                    {"razon social": {"regex": valor, "$options": "i"}},
+                    {"razon_social": {"regex": valor, "$options": "i"}},
+                    {"Razon_Social": {"regex": valor, "$options": "i"}},
+                ]
+            }
+        elif tipo_busqueda == "rut":
+            filtro = {
+                "$or" : [
+                    {"RUT": valor},
+                    {"rut": valor},
+                    {"Rut": valor},
+                ]
+            }
+        else: 
+            print("Tipo de busqueda no valido")
+            return None
+    except Exception as e:
+        print(f"Error {e}")
+
     try:
         for coleccion_nombre in colecciones:
             coleccion = db[coleccion_nombre]
