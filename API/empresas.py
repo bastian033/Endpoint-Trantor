@@ -122,10 +122,11 @@ def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()
 
 def normalizar_razon_social(razon_social):
-    return "".join(
+    razon_social = "".join(
         c for c in unicodedata.normalize("NFD", razon_social.lower())
         if unicodedata.category(c) != "Mn"
-    )
+    ) 
+    return razon_social.replace("_", " ") 
 
 "----------------------------------------------------------------------------------------------"
 
