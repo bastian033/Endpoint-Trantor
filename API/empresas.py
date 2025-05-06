@@ -80,10 +80,9 @@ def buscar_en_base_datos(tipo_busqueda, valor):
         if tipo_busqueda == "razon_social":
             filtro = {
                 "$or":[
-                    {"Razon Social": {"regex": valor, "$options": "i"}},
-                    {"razon social": {"regex": valor, "$options": "i"}},
-                    {"razon_social": {"regex": valor, "$options": "i"}},
-                    {"Razon_Social": {"regex": valor, "$options": "i"}},
+                    {normalizar_razon_social("Razon Social"): {"$regex": valor, "$options": "i"}},
+                    {normalizar_razon_social("razon_social"): {"$regex": valor, "$options": "i"}},
+                    {normalizar_razon_social("razon social"): {"$regex": valor, "$options": "i"}},
                 ]
             }
         elif tipo_busqueda == "rut":
@@ -97,6 +96,7 @@ def buscar_en_base_datos(tipo_busqueda, valor):
         else: 
             print("Tipo de busqueda no valido")
             return None
+        
     except Exception as e:
         print(f"Error {e}")
 
