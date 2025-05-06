@@ -88,6 +88,11 @@ def buscar_en_base_datos(tipo_busqueda, valor):
                 ]
             }
         elif tipo_busqueda == "rut":
+            try:
+                valor = int(valor)
+            except ValueError:
+                print("rut invalido")
+                return None
             filtro = {
                 "$or": [
                     {"RUT": valor},
