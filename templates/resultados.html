@@ -28,7 +28,7 @@
                             <td>{{ resultado.get('Razon Social', 'N/A') }}</td>
                             <td>
                                 <ul>
-                                    {% for key, value in resultado.items() if key not in ['Razon Social', 'RUT', '_id'] %}
+                                    {% for key, value in resultado.items() if key|lower not in ['razon social', 'rut', '_id'] %}
                                         <li><strong>{{ key }}:</strong> {{ value }}</li>
                                     {% endfor %}
                                 </ul>
