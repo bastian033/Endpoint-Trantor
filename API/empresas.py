@@ -77,30 +77,31 @@ def buscar_en_base_datos(tipo_busqueda, valor):
 
     try:
         filtro = {}
-        if tipo_busqueda == "razon_social":
+        if tipo_busqueda == "razon social":
             filtro = {
-                "$or":[
+                "$or": [
                     {"Razon Social": {"$regex": valor, "$options": "i"}},
                     {"razon_social": {"$regex": valor, "$options": "i"}},
                     {"razon social": {"$regex": valor, "$options": "i"}},
+                    {"razón social": {"$regex": valor, "$options": "i"}},
+                    {"razón_social": {"$regex": valor, "$options": "i"}}
                 ]
             }
-            tipo_busqueda.replace("_", " ")
-            
         elif tipo_busqueda == "rut":
             filtro = {
-                "$or" : [
+                "$or": [
                     {"RUT": valor},
                     {"rut": valor},
-                    {"Rut": valor},
+                    {"Rut": valor}
                 ]
             }
-        else: 
-            print("Tipo de busqueda no valido")
+        else:
+            print("Tipo de búsqueda no válido")
             return None
-        
+
     except Exception as e:
-        print(f"Error {e}")
+        print(f"Error al construir el filtro: {e}")
+        return None
 
     try:
         for coleccion_nombre in colecciones:
@@ -109,9 +110,8 @@ def buscar_en_base_datos(tipo_busqueda, valor):
             print(f"Buscando en {coleccion_nombre} - encontrados: {len(resultados)}")
             for resultado in resultados:
                 resultado["_id"] = str(resultado["_id"])
-                #resultado: Dict[str, Any] = {}
-                # Esto es para normalizar y evitar que el rut y la razon social se muestren en 'otros campos'
-                resultado_normalizado = {key.lower(): value for key , value in resultado.items()}
+                # Normalizar las claves a minúsculas para evitar problemas en el template
+                resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
                 resultados_totales.append(resultado_normalizado)
 
         return resultados_totales
