@@ -24,11 +24,11 @@
                 <tbody>
                     {% for resultado in resultados %}
                         <tr>
-                            <td>{{ resultado.get('rut', 'N/A') }}</td>
-                            <td>{{ resultado.get('razon social', 'N/A') }}</td>
+                            <td class="text-muted">{{ resultado.get('rut', 'N/A') }}</td>
+                            <td class="text-muted">{{ resultado.get('razon social', 'N/A') }}</td>
                             <td>
                                 <ul>
-                                    {% for key, value in resultado.items() if key|lower not in ['razon social', 'rut', '_id'] %}
+                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id'] %}
                                         <li><strong>{{ key }}:</strong> {{ value }}</li>
                                     {% endfor %}
                                 </ul>
