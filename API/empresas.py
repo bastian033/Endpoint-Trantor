@@ -85,6 +85,8 @@ def buscar_en_base_datos(tipo_busqueda, valor):
                     {"razon social": {"$regex": valor, "$options": "i"}},
                 ]
             }
+            tipo_busqueda.replace("_", " ")
+            
         elif tipo_busqueda == "rut":
             filtro = {
                 "$or" : [
