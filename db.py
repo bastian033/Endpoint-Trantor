@@ -1,5 +1,11 @@
 from pymongo import MongoClient
 
-cliente = MongoClient("mongodb://localhost:27017")
 
-db = cliente["DatosEmpresas"]
+class conexion_base_datos:
+    def __init__(self):
+        pass
+
+    def conexion(self):
+        cliente = MongoClient("mongodb://localhost:27017")
+
+        db = cliente["DatosEmpresas"]

@@ -13,45 +13,45 @@ load_dotenv()  # Cargar las variables de entorno desde el archivo .env
 # request es para obtener los datos que envia el frontend
 # db es la conexion con la base de datos
 
-TURNSTILE_SECRET_KEY =  os.getenv("TURNSTILE_SECRET_KEY")
-if not TURNSTILE_SECRET_KEY:
-    print(dict(os.environ))
-    raise Exception("La variable de entorno TURNSTILE_SECRET_KEY no está definida.")
+# TURNSTILE_SECRET_KEY =  os.getenv("TURNSTILE_SECRET_KEY")
+# if not TURNSTILE_SECRET_KEY:
+#     print(dict(os.environ))
+#     raise Exception("La variable de entorno TURNSTILE_SECRET_KEY no está definida.")
 
 empresas = Blueprint("empresas", __name__) # Crear un grupo de endpoints para las empresas
 
 @empresas.route("/empresa/buscar", methods=["GET"])
 def buscar_empresa():
 
-    #  Validar CAPTCHA 
-    token = request.args.get('cf-turnstile-response')  # Turnstile manda esto
+    # #  Validar CAPTCHA 
+    # token = request.args.get('cf-turnstile-response')  # Turnstile manda esto
 
-    if not token:
-        return render_template("resultados.html", resultados=None, mensaje="Debes resolver el Captcha.")
+    # if not token:
+    #     return render_template("resultados.html", resultados=None, mensaje="Debes resolver el Captcha.")
 
-    url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
-    data = {
-        'secret': TURNSTILE_SECRET_KEY,
-        'response': token
-    }
+    # url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    # data = {
+    #     'secret': TURNSTILE_SECRET_KEY,
+    #     'response': token
+    # }
 
-    try:
-       headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-       resp = requests.post(url, data=data, headers=headers)
+    # try:
+    #    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    #    resp = requests.post(url, data=data, headers=headers)
         
-       print("Token recibido:", token)
-       print("Respuesta de Turnstile:", resp.text)
+    #    print("Token recibido:", token)
+    #    print("Respuesta de Turnstile:", resp.text)
 
 
-       # Verificar que la respuesta sea JSON
-       if 'application/json' not in resp.headers.get('Content-Type', ''):
-           return render_template("resultados.html", resultados=None, mensaje="Respuesta inválida del servidor CAPTCHA.")
+    #    # Verificar que la respuesta sea JSON
+    #    if 'application/json' not in resp.headers.get('Content-Type', ''):
+    #        return render_template("resultados.html", resultados=None, mensaje="Respuesta inválida del servidor CAPTCHA.")
  
-       resultado = resp.json()
-       if not resultado.get("success"):
-           return render_template("resultados.html", resultados=None, mensaje="Captcha invalido. Intenta de nuevo.")
-    except Exception as e:
-        return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
+    #    resultado = resp.json()
+    #    if not resultado.get("success"):
+    #        return render_template("resultados.html", resultados=None, mensaje="Captcha invalido. Intenta de nuevo.")
+    # except Exception as e:
+    #     return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
 
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
@@ -88,11 +88,11 @@ def buscar_en_base_datos(tipo_busqueda, valor):
                 ]
             }
         elif tipo_busqueda == "rut":
-            try:
-                valor = int(valor)
-            except ValueError:
-                print("rut invalido")
-                return None
+            # try:
+            #     valor = int(valor)
+            # except ValueError:
+            #     print("rut invalido")
+            #     return None
             filtro = {
                 "$or": [
                     {"RUT": valor},
@@ -113,6 +113,8 @@ def buscar_en_base_datos(tipo_busqueda, valor):
             coleccion = db[coleccion_nombre]
             resultados = list(coleccion.find(filtro))
             print(f"Buscando en {coleccion_nombre} - encontrados: {len(resultados)}")
+            plan = coleccion.find(filtro).explain()
+            print(plan)
             for resultado in resultados:
                 resultado["_id"] = str(resultado["_id"])
                 # Normalizar las claves a minúsculas para evitar problemas en el template
