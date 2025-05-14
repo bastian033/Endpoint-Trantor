@@ -6,7 +6,7 @@ from psycopg2.extras import execute_values
 # Configuración
 MONGO_URI = "mongodb://localhost:27017/"
 MONGO_DB = "DatosEmpresas"
-POSTGRES_DB = "DatosNormalizados"
+POSTGRES_DB = "datosnormalizados"
 POSTGRES_USER = "practicante"
 POSTGRES_PASSWORD = "trantor2025"
 POSTGRES_HOST = "localhost"
