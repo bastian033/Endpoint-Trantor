@@ -26,10 +26,28 @@ pg_conn = psycopg2.connect(
 )
 pg_cursor = pg_conn.cursor()
 
-# Migrar cada colección
+# Función para verificar si la tabla existe
+def tabla_existe(tabla):
+    pg_cursor.execute(f"""
+        SELECT EXISTS (
+            SELECT 1 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = '{tabla}'
+        );
+    """)
+    return pg_cursor.fetchone()[0]
+
+# Migrar cada coleccion
 colecciones = mongo_db.list_collection_names()
 for col_name in colecciones:
-    print(f"⏳ Procesando colección: {col_name}")
+    print(f"Procesando coleccion: {col_name}")
+
+    # Verificar si la tabla ya existe
+    if tabla_existe(col_name):
+        print(f"La tabla '{col_name}' ya existe. Se omitirá.")
+        continue  # Saltar al siguiente si la tabla ya existe
+
     cursor = mongo_db[col_name].find({}, batch_size=LOTE_SIZE)
     first_batch = []
 
@@ -65,9 +83,9 @@ for col_name in colecciones:
             execute_values(pg_cursor, sql, tuples)
             pg_conn.commit()
 
-        print(f"✔ Colección '{col_name}' migrada exitosamente.")
+        print(f"Coleccion '{col_name}' migrada")
     except Exception as e:
-        print(f"❌ Error al migrar colección '{col_name}': {e}")
+        print(f"Error al migrar coleccion '{col_name}': {e}")
 
 # Cierre
 pg_cursor.close()
