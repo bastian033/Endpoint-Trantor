@@ -5,6 +5,7 @@ import requests
 import os
 import unicodedata
 
+db = conexion_base_datos().conexion() 
 
 db = conexion_base_datos().conexion() 
 
