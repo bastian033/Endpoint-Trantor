@@ -1,40 +1,37 @@
 # Script para migrar DatosGob
 
 from pymongo import MongoClient
-from bson import ObjectId
+from datetime import datetime
 
 # Configuración
-conexion = MongoClient("mongodb://localhost:27017")
+conexion = MongoClient("mongodb://localhost:27018")
 db_origen = conexion["DatosEmpresas"]
 db_destino = conexion["DatosNormalizados"]
+fecha_guardado = datetime.now().date().isoformat()
 
 # Colecciones de origen
-colecciones = [f"DatosGob{anio}" for anio in range(2022, 2025)]
+colecciones = [f"DatosGob{anio}" for anio in range(2013, 2025)]
 print(f"Total de colecciones: {colecciones}")
 
 BATCH_SIZE = 1000
-
-# Cambia por el último _id insertado exitosamente
-ultimo_id = ObjectId('68011db39ccb37402aee8780')
 
 for nombre_coleccion in colecciones:
     print(f"Migrando colección: {nombre_coleccion}")
     coleccion = db_origen[nombre_coleccion]
     batch = []
-    cursor = coleccion.find({"_id": {"$gt": ultimo_id}}, batch_size=BATCH_SIZE)
+    cursor = coleccion.find(batch_size=BATCH_SIZE)
     for doc in cursor:
-        if db_destino.empresas.find_one({"rut": doc.get("RUT", None)}):
-            continue
         nuevo_doc = {
             "rut": doc.get("RUT", None),
             "tags": [],
+            "fecha_subida_datos" : fecha_guardado,
             "historia": {
                 "socios": [],
                 "representantes_legales": [],
                 "direcciones": [
                     {
                         "vigente": True,
-                        "fecha_actualizacion": None,
+                        "fecha_actualizacion": doc.get("Fecha de aprobacion x SII", None),
                         "tipo_direccion": None,
                         "calle": None,
                         "numero": None,
@@ -68,15 +65,9 @@ for nombre_coleccion in colecciones:
         }
         batch.append(nuevo_doc)
         if len(batch) >= BATCH_SIZE:
-            try:
-                db_destino.empresas.insert_many(batch)
-            except Exception as e:
-                print(f"Error al insertar lote: {e}")
+            db_destino.empresas.insert_many(batch)
             batch = []
     if batch:
-        try:
-            db_destino.empresas.insert_many(batch)
-        except Exception as e:
-            print(f"Error al insertar lote final: {e}")
+        db_destino.empresas.insert_many(batch)
 
 print("Migración completada.")

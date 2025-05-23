@@ -1,8 +1,10 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, InsertOne
+from datetime import datetime
 
-conexion = MongoClient("mongodb://localhost:27017")
+conexion = MongoClient("mongodb://localhost:27018")
 db_origen = conexion["DatosEmpresas"]
 db_destino = conexion["DatosNormalizados"]
+fecha_guardado = datetime.now().date().isoformat()
 
 colecciones_especificas = [
     "Nómina_de_empresas_personas_jurídicas_año_comercial_20052009",
@@ -20,7 +22,7 @@ for nombre_coleccion in colecciones_especificas:
     for doc in coleccion.find():
         rut = f'{doc.get("RUT", "")}-{doc.get("DV", "")}'
         razon_social = doc.get("Razón social", None)
-        codigo_sociedad = None  # No hay campo directo, puedes mapear si tienes lógica para esto
+        codigo_sociedad = None
         fecha_inicio = doc.get("Fecha inicio de actividades vige", None)
         fecha_termino = doc.get("Fecha término de giro", None)
         actividad = doc.get("Actividad económica", None)
@@ -33,6 +35,7 @@ for nombre_coleccion in colecciones_especificas:
         nuevo_doc = {
             "rut": rut,
             "tags": [],
+            "fecha_subida_datos": fecha_guardado,
             "historia": {
                 "socios": [],
                 "representantes_legales": [],
@@ -85,18 +88,17 @@ for nombre_coleccion in colecciones_especificas:
                 ]
             }
         }
-        
-        batch.append(nuevo_doc)
-        try:
-            if len(batch) >= BATCH_SIZE:
-                db_destino.empresas.insert_many(batch)
-        except Exception as e:
-            print(f"Error al insertar lote: {e}")       
+        batch.append(InsertOne(nuevo_doc))
+        if len(batch) >= BATCH_SIZE:
+            try:
+                db_destino.empresas.bulk_write(batch, ordered=False)
+            except Exception as e:
+                print(f"Error en bulk_write: {e}")
             batch = []
     if batch:
         try:
-            db_destino.empresas.insert_many(batch)
+            db_destino.empresas.bulk_write(batch, ordered=False)
         except Exception as e:
-            print(f"Error al insertar lote final: {e}")
+            print(f"Error en bulk_write: {e}")
 
 print("Migración completada.")
