@@ -46,35 +46,26 @@
                                         </li>
                                     {% endif %}
 
-                                    {# Mostrar historia de forma amigable #}
+                                    {# Mostrar todos los campos de historia como lista plana #}
                                     {% if resultado.get('historia') and resultado.historia is mapping %}
-                                        <li>
-                                            <strong>historia:</strong>
-                                            <ul>
-                                                {% for hkey, hval in resultado.historia.items() %}
-                                                    <li>
-                                                        <strong>{{ hkey }}:</strong>
-                                                        {% if hval is iterable and not hval is string %}
-                                                            <ul>
-                                                            {% for item in hval %}
-                                                                <li>
-                                                                    {% if item is mapping %}
-                                                                        {% for k, v in item.items() %}
-                                                                            <strong>{{ k }}:</strong> {{ v }}{% if not loop.last %}, {% endif %}
-                                                                        {% endfor %}
-                                                                    {% else %}
-                                                                        {{ item }}
-                                                                    {% endif %}
-                                                                </li>
+                                        {% for hkey, hval in resultado.historia.items() %}
+                                            {% if hval is iterable and not hval is string %}
+                                                {% for item in hval %}
+                                                    {% if item is mapping %}
+                                                        <li>
+                                                            <strong>{{ hkey }}:</strong>
+                                                            {% for k, v in item.items() %}
+                                                                <strong>{{ k }}:</strong> {{ v }}{% if not loop.last %}, {% endif %}
                                                             {% endfor %}
-                                                            </ul>
-                                                        {% else %}
-                                                            {{ hval }}
-                                                        {% endif %}
-                                                    </li>
+                                                        </li>
+                                                    {% else %}
+                                                        <li><strong>{{ hkey }}:</strong> {{ item }}</li>
+                                                    {% endif %}
                                                 {% endfor %}
-                                            </ul>
-                                        </li>
+                                            {% else %}
+                                                <li><strong>{{ hkey }}:</strong> {{ hval }}</li>
+                                            {% endif %}
+                                        {% endfor %}
                                     {% endif %}
 
                                     {# Mostrar otros campos que no sean rut, razon social, _id, tags, historia #}
