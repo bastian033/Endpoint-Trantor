@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 # Configuración
-conexion = MongoClient("mongodb://localhost:27018")
+conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
 db_destino = conexion["DatosNormalizados"]
 
