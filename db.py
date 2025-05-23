@@ -6,7 +6,7 @@ class conexion_base_datos:
         pass
 
     def conexion(self):
-        cliente = MongoClient("mongodb://localhost:27018")
+        cliente = MongoClient("mongodb://localhost:27017")
 
         db = cliente["DatosNormalizados"]
         return db
