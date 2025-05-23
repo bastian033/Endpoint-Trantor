@@ -7,7 +7,6 @@ import unicodedata
 
 db = conexion_base_datos().conexion() 
 
-db = conexion_base_datos().conexion() 
 
 load_dotenv()  # Cargar las variables de entorno desde el archivo .env
 

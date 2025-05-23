@@ -9,3 +9,4 @@ class conexion_base_datos:
         cliente = MongoClient("mongodb://localhost:27017")
 
         db = cliente["DatosEmpresas"]
+        return db
