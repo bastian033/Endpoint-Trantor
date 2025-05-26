@@ -5,6 +5,7 @@ import requests
 import os
 import unicodedata
 import re
+import datetime
 
 db = conexion_base_datos().conexion() 
 
@@ -117,16 +118,43 @@ def subir_info_empresa():
 
     try:
         for campo in ["rut", "razon_social"]:
-            if campo not in datos:
+            if campo not in datos or not datos[campo]:
                 campos_faltantes.append(campo)
         
         if campos_faltantes:
             return jsonify({"error": f"faltan campos: {', '.join(campos_faltantes)}"}), 400
 
-        resultado = coleccion.insert_one(datos)     
-        return jsonify({"Listo!": "Info agregada!" })
+        razon_social = datos["razon_social"]
+        rut = datos["rut"]
+
+        historia = datos.get("historia", {})
+        historia.setdefault("razon_social", [{
+            "razon_social": razon_social,
+            "vigente": True,
+            "origen": "manual",
+            "fecha_actualizacion": datetime.now().strftime("%d-%m-%Y")
+        }])
+
+        tags = [razon_social]
+        tags2 = razon_social
+
+        doc = {
+            "rut": rut,
+            "tags": tags,
+            "tags2": tags2,
+            "fecha_subida_datos": datetime.now().strftime("%Y-%m-%d"),
+            "historia": historia,
+            "socios": datos.get("socios", []),
+            "representantes_legales": datos.get("representantes_legales", []),
+            "direcciones": datos.get("direcciones", []),
+            "actividades_economicas": datos.get("actividades_economicas", []),
+            "actuacion": datos.get("actuacion", [])
+        }
+
+        resultado = coleccion.insert_one(doc)
+        return jsonify({"Listo!": "Info agregada!"})
 
     except Exception as e:
-        return jsonify({"error":e})
+        return jsonify({"error": str(e)})
 
 
