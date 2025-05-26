@@ -55,13 +55,12 @@ def buscar_empresa():
     except Exception as e:
         return render_template("resultados.html", resultados=None, mensaje="Error al verificar captcha.")
 
-    tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
 
-    tipo_busqueda = request.args.get('tipo_busqueda')
-    valor = request.args.get('valor')
+    if not valor:
+        return render_template("resultados.html", resultados=None, mensaje="Debes ingresar un valor para buscar.")
 
-    resultados = buscar_en_base_datos(tipo_busqueda, valor)
+    resultados = buscar_en_base_datos(valor)
 
     if resultados:
         return render_template("resultados.html", resultados=resultados)
