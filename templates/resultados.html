@@ -13,80 +13,99 @@
     </div>
     <div class="container">
         {% if resultados %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>RUT</th>
-                        <th>Razón Social</th>
-                        <th>Otros Campos</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for resultado in resultados %}
-                        <tr>
-                            <td class="text-muted">{{ resultado.get('rut', 'N/A') }}</td>
-                            <td class="text-muted">
-                                {# Mostrar la razón social principal si está en historia.razon_social #}
-                                {% if resultado.get('historia') and resultado.historia.get('razon_social') %}
-                                    {{ resultado.historia.razon_social[0].razon_social }}
-                                {% else %}
-                                    {{ resultado.get('razon social', 'N/A') }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                <ul>
-                                    {# Mostrar tags como lista separada por comas #}
-                                    {% if resultado.get('tags') %}
-                                        <li><strong>tags:</strong>
-                                            {% if resultado.tags is iterable and not resultado.tags is string %}
-                                                {{ resultado.tags | join(', ') }}
-                                            {% else %}
-                                                {{ resultado.tags }}
-                                            {% endif %}
-                                        </li>
-                                    {% endif %}
-
-                                    {# Mostrar historia de forma amigable #}
-                                    {% if resultado.get('historia') and resultado.historia is mapping %}
+            <div class="row g-4">
+                {% for resultado in resultados %}
+                <div class="col-12">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0">{{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}</h4>
+                                <small>RUT: {{ resultado.get('rut', 'N/A') }}</small>
+                            </div>
+                            <span class="badge bg-success">{{ resultado.get('estado', 'Activa') }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Datos generales</h6>
+                                    <ul class="list-unstyled mb-2">
+                                        <li><strong>Razón Social:</strong> {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}</li>
+                                        <li><strong>RUT:</strong> {{ resultado.get('rut', 'N/A') }}</li>
+                                        <li><strong>Tipo de empresa:</strong> {{ resultado.get('tipo_empresa', 'N/A') }}</li>
+                                        <li><strong>Fecha de constitución:</strong> {{ resultado.get('fecha_constitucion', 'N/A') }}</li>
+                                        <li><strong>Domicilio:</strong> {{ resultado.get('domicilio', 'N/A') }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Actividad</h6>
+                                    <ul class="list-unstyled mb-2">
+                                        <li><strong>Giro Principal:</strong> {{ resultado.get('giro_principal', 'N/A') }}</li>
+                                        <li><strong>Actividad económica:</strong> {{ resultado.get('actividad_economica', 'N/A') }}</li>
+                                        <li><strong>Código SII:</strong> {{ resultado.get('codigo_sii', 'N/A') }}</li>
+                                        <li><strong>Categoría:</strong> {{ resultado.get('categoria', 'N/A') }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Representantes legales</h6>
+                                    <ul class="list-unstyled">
+                                        {% for rep in resultado.get('historia', {}).get('representantes_legales', []) %}
+                                            <li>
+                                                <strong>{{ rep.get('nombre', 'N/A') }}</strong>
+                                                {% if rep.get('rut') %} ({{ rep.get('rut') }}){% endif %}
+                                                {% if rep.get('rol') %} - {{ rep.get('rol') }}{% endif %}
+                                            </li>
+                                        {% else %}
+                                            <li class="text-muted">No hay representantes legales registrados.</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="fw-bold">Socios</h6>
+                                    <ul class="list-unstyled">
+                                        {% for socio in resultado.get('historia', {}).get('socios', []) %}
+                                            <li>
+                                                <strong>{{ socio.get('nombre', 'N/A') }}</strong>
+                                                {% if socio.get('rut') %} ({{ socio.get('rut') }}){% endif %}
+                                                {% if socio.get('rol') %} - {{ socio.get('rol') }}{% endif %}
+                                            </li>
+                                        {% else %}
+                                            <li class="text-muted">No hay socios registrados.</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Nombre de fantasía</h6>
+                                <p>{{ resultado.get('nombre_fantasia', 'N/A') }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Historial legal</h6>
+                                <ul class="list-unstyled">
+                                    {% for evento in resultado.get('historia', {}).get('historial_legal', []) %}
                                         <li>
-                                            <strong>historia:</strong>
-                                            <ul>
-                                                {% for hkey, hval in resultado.historia.items() %}
-                                                    <li>
-                                                        <strong>{{ hkey }}:</strong>
-                                                        {% if hval is iterable and not hval is string %}
-                                                            <ul>
-                                                            {% for item in hval %}
-                                                                <li>
-                                                                    {% if item is mapping %}
-                                                                        {% for k, v in item.items() %}
-                                                                            <strong>{{ k }}:</strong> {{ v }}{% if not loop.last %}, {% endif %}
-                                                                        {% endfor %}
-                                                                    {% else %}
-                                                                        {{ item }}
-                                                                    {% endif %}
-                                                                </li>
-                                                            {% endfor %}
-                                                            </ul>
-                                                        {% else %}
-                                                            {{ hval }}
-                                                        {% endif %}
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
+                                            <strong>{{ evento.get('fecha', 'N/A') }}:</strong>
+                                            {{ evento.get('titulo', '') }} - {{ evento.get('descripcion', '') }}
                                         </li>
-                                    {% endif %}
-
-                                    {# Mostrar otros campos que no sean rut, razon social, _id, tags, historia #}
-                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'historia'] %}
+                                    {% else %}
+                                        <li class="text-muted">No hay historial legal registrado.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">Otros campos</h6>
+                                <ul class="list-unstyled">
+                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'historia', 'nombre_fantasia'] %}
                                         <li><strong>{{ key }}:</strong> {{ value }}</li>
                                     {% endfor %}
                                 </ul>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         {% else %}
             <div class="alert alert-warning text-center">
                 {{ mensaje }}

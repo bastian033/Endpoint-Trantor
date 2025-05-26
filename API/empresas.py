@@ -69,7 +69,7 @@ def buscar_empresa():
 def buscar_en_base_datos(valor):
     resultados_totales = []
     try:
-        filtro = {"tags": {"$regex": f"^{valor}", "$options": "i"}}
+        filtro = {"tags2": {"$regex": valor, "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
@@ -107,18 +107,18 @@ def buscar_en_base_datos(valor):
 @empresas.route("/empresa/subir_info/", methods=["POST"])
 def subir_info_empresa():
     datos = request.get_json()
-    coleccion = db["EmpresasRevisadas"]
+    coleccion = db["empresas"]
     campos_faltantes = []
 
     try:
-        for campo in ["RUT", "Razon Social"]:
+        for campo in ["rut", "razon_social"]:
             if campo not in datos:
                 campos_faltantes.append(campo)
         
         if campos_faltantes:
             return jsonify({"error": f"faltan campos: {', '.join(campos_faltantes)}"}), 400
 
-        resultado = coleccion.insert_one(datos)
+        resultado = coleccion.insert_one(datos)     
         return jsonify({"Listo!": "Info agregada!" })
 
     except Exception as e:
