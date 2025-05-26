@@ -4,6 +4,7 @@ from db import conexion_base_datos
 import requests
 import os
 import unicodedata
+import re
 
 db = conexion_base_datos().conexion() 
 
@@ -69,8 +70,13 @@ def buscar_empresa():
 def buscar_en_base_datos(valor):
     resultados_totales = []
     try:
-        #filtro = {"tags2": {"$regex": valor, "$options": "i"}}
-        filtro = {"tags2": {"$regex": f"^{valor}", "$options": "i"}}
+        # Detectar si el valor es un RUT (ej: 12345678-9 o 12345678-k)
+        rut_pattern = re.compile(r'^\d{7,8}-[\dkK]$')
+        valor_normalizado = normalizar_rut(valor)
+        if rut_pattern.match(valor_normalizado):
+            filtro = {"rut": valor_normalizado}
+        else:
+            filtro = {"tags2": {"$regex": valor, "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
@@ -79,8 +85,6 @@ def buscar_en_base_datos(valor):
         coleccion = db["empresas"]
         resultados = list(coleccion.find(filtro))
         print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
-        # plan = coleccion.find(filtro).explain()
-        # print(plan)
         for resultado in resultados:
             resultado["_id"] = str(resultado["_id"])
             resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
@@ -92,8 +96,8 @@ def buscar_en_base_datos(valor):
         print(f"Error al buscar: {e}")
         return None
     
-# def normalizar_rut(rut):
-#     return rut.replace(".", "").replace(" ", "").strip()
+def normalizar_rut(rut):
+    return rut.replace(".", "").replace(" ", "").strip()
 
 # def normalizar_razon_social(razon_social):
 #     razon_social = "".join(
