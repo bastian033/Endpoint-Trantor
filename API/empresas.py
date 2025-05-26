@@ -69,7 +69,8 @@ def buscar_empresa():
 def buscar_en_base_datos(valor):
     resultados_totales = []
     try:
-        filtro = {"tags2": {"$regex": valor, "$options": "i"}}
+        #filtro = {"tags2": {"$regex": valor, "$options": "i"}}
+        filtro = {"tags2": {"$regex": f"^{valor}", "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
