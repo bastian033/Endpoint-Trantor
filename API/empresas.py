@@ -73,28 +73,12 @@ def buscar_empresa():
         return render_template("resultados.html", resultados=resultados)
     return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
 
-def buscar_en_base_datos(tipo_busqueda, valor):
+def buscar_en_base_datos(valor):
     colecciones = db.list_collection_names()
     resultados_totales = []
 
     try:
-        filtro = {}
-        if tipo_busqueda == "razon social":
-            filtro = {
-                "$or": [
-                    {"Razon Social": {"$regex": valor, "$options": "i"}},
-                    {"razon_social": {"$regex": valor, "$options": "i"}},
-                    {"razon social": {"$regex": valor, "$options": "i"}},
-                    {"razón social": {"$regex": valor, "$options": "i"}},
-                    {"razón_social": {"$regex": valor, "$options": "i"}}
-                ]
-            }
-        elif tipo_busqueda == "rut":
-            filtro = {"rut": valor}
-        else:
-            print("Tipo de búsqueda no válido")
-            return None
-
+        filtro = {"tags": {"$regex": valor, "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
@@ -108,7 +92,6 @@ def buscar_en_base_datos(tipo_busqueda, valor):
             print(plan)
             for resultado in resultados:
                 resultado["_id"] = str(resultado["_id"])
-                # Normalizar las claves a minúsculas para evitar problemas en el template
                 resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
                 resultados_totales.append(resultado_normalizado)
 
@@ -117,7 +100,7 @@ def buscar_en_base_datos(tipo_busqueda, valor):
     except Exception as e:
         print(f"Error al buscar: {e}")
         return None
-
+    
 def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()
 

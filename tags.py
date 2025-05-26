@@ -32,7 +32,7 @@ for doc in cursor:
             tags.add(str(rep["rut"]))
 
     # Nombre de fantasia
-    nombre_fantasia = doc.get("nombre_de_fantasia") or doc.get("nombre_fantasia")
+    nombre_fantasia = doc.get("nombre_fantasia") or doc.get("nombre_fantasia")
     if nombre_fantasia:
         tags.add(str(nombre_fantasia))
 
@@ -57,6 +57,6 @@ if batch:
 print("Campo tags actualizado como lista.")
 
 # Crear índices recomendados
-coleccion.create_index("rut")
+#coleccion.create_index("rut")
 coleccion.create_index("tags")
-print("Índices creados.")
+print("indices creados.")
