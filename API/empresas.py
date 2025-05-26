@@ -71,7 +71,8 @@ def buscar_en_base_datos(valor):
     resultados_totales = []
 
     try:
-        filtro = {"tags": {"$regex": valor, "$options": "i"}}
+        # Buscar por prefijo (inicio del texto) en tags, insensible a mayúsculas/minúsculas
+        filtro = {"tags": {"$regex": f"^{valor}", "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
