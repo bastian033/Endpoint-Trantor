@@ -75,10 +75,9 @@ def buscar_en_base_datos(valor):
         return None
 
     try:
-        coleccion = db["EmpresasRevisadas"]
+        coleccion = db["empresas"]
         resultados = list(coleccion.find(filtro))
         print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
-        # Solo para debug, puedes comentar esto en producción
         # plan = coleccion.find(filtro).explain()
         # print(plan)
         for resultado in resultados:
