@@ -67,27 +67,24 @@ def buscar_empresa():
     return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
 
 def buscar_en_base_datos(valor):
-    colecciones = db.list_collection_names()
     resultados_totales = []
-
     try:
-        # Buscar por prefijo (inicio del texto) en tags, insensible a mayúsculas/minúsculas
         filtro = {"tags": {"$regex": f"^{valor}", "$options": "i"}}
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
 
     try:
-        for coleccion_nombre in colecciones:
-            coleccion = db[coleccion_nombre]
-            resultados = list(coleccion.find(filtro))
-            print(f"Buscando en {coleccion_nombre} - encontrados: {len(resultados)}")
-            plan = coleccion.find(filtro).explain()
-            print(plan)
-            for resultado in resultados:
-                resultado["_id"] = str(resultado["_id"])
-                resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
-                resultados_totales.append(resultado_normalizado)
+        coleccion = db["EmpresasRevisadas"]
+        resultados = list(coleccion.find(filtro))
+        print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
+        # Solo para debug, puedes comentar esto en producción
+        # plan = coleccion.find(filtro).explain()
+        # print(plan)
+        for resultado in resultados:
+            resultado["_id"] = str(resultado["_id"])
+            resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
+            resultados_totales.append(resultado_normalizado)
 
         return resultados_totales
 
@@ -95,15 +92,15 @@ def buscar_en_base_datos(valor):
         print(f"Error al buscar: {e}")
         return None
     
-def normalizar_rut(rut):
-    return rut.replace(".", "").replace(" ", "").strip()
+# def normalizar_rut(rut):
+#     return rut.replace(".", "").replace(" ", "").strip()
 
-def normalizar_razon_social(razon_social):
-    razon_social = "".join(
-        c for c in unicodedata.normalize("NFD", razon_social.lower())
-        if unicodedata.category(c) != "Mn"
-    ) 
-    return razon_social.replace("_", " ") 
+# def normalizar_razon_social(razon_social):
+#     razon_social = "".join(
+#         c for c in unicodedata.normalize("NFD", razon_social.lower())
+#         if unicodedata.category(c) != "Mn"
+#     ) 
+#     return razon_social.replace("_", " ") 
 
 "----------------------------------------------------------------------------------------------"
 
