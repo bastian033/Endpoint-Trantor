@@ -58,14 +58,8 @@ def buscar_empresa():
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
 
-    if not tipo_busqueda or not valor:
-        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de busqueda y proporcionar un valor.")
-
     tipo_busqueda = request.args.get('tipo_busqueda')
     valor = request.args.get('valor')
-
-    if not tipo_busqueda or not valor:
-        return render_template("resultados.html", resultados=None, mensaje="Debe seleccionar un tipo de busqueda y proporcionar un valor.")
 
     resultados = buscar_en_base_datos(tipo_busqueda, valor)
 
