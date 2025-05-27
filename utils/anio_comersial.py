@@ -1,6 +1,6 @@
 from pymongo import MongoClient, UpdateOne
 
-conexion = MongoClient("mongodb://localhost:27018")
+conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
 db_destino = conexion["DatosNormalizados"]
 
