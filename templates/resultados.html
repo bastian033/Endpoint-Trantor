@@ -96,10 +96,26 @@
                             <div>
                                 <h6 class="fw-bold">Otros campos</h6>
                                 <ul class="list-unstyled">
-                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'historia', 'nombre_fantasia'] %}
+                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'historia', 'nombre_fantasia', 'años_comerciales'] %}
                                         <li><strong>{{ key }}:</strong> {{ value }}</li>
                                     {% endfor %}
                                 </ul>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Años comerciales</h6>
+                                {% if resultado.get('años_comerciales') %}
+                                    <ul class="list-inline">
+                                        {% for ac in resultado.get('años_comerciales', []) %}
+                                            <li class="list-inline-item mb-1">
+                                                <span class="badge bg-info text-dark">
+                                                    {{ ac.año }} <small>({{ ac.origen }})</small>
+                                                </span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="text-muted">No hay años comerciales registrados.</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
