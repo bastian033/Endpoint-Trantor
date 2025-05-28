@@ -1,7 +1,7 @@
 from pymongo import MongoClient, InsertOne
 from collections import defaultdict
 
-conexion = MongoClient("mongodb://localhost:27018")
+conexion = MongoClient("mongodb://localhost:27017")
 db = conexion["DatosNormalizados"]
 coleccion = db.empresas
 
