@@ -2,7 +2,7 @@ from pymongo import MongoClient, UpdateOne
 
 conexion = MongoClient("mongodb://localhost:27017")
 db = conexion["DatosEmpresas"]
-coleccion = db.PUB_NOM_SUCURSAL
+coleccion = db.PUB_NOM_DOMICILIO
 
 BATCH_SIZE = 1000
 batch = []
