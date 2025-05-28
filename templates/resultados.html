@@ -80,19 +80,6 @@
                                 <h6 class="fw-bold">Nombre de fantasía</h6>
                                 <p>{{ resultado.get('nombre_fantasia', 'N/A') }}</p>
                             </div>
-                            <div class="mb-3">
-                                <h6 class="fw-bold">Historial legal</h6>
-                                <ul class="list-unstyled">
-                                    {% for evento in resultado.get('historia', {}).get('historial_legal', []) %}
-                                        <li>
-                                            <strong>{{ evento.get('fecha', 'N/A') }}:</strong>
-                                            {{ evento.get('titulo', '') }} - {{ evento.get('descripcion', '') }}
-                                        </li>
-                                    {% else %}
-                                        <li class="text-muted">No hay historial legal registrado.</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
                             <div>
                                 <h6 class="fw-bold">Otros campos</h6>
                                 <ul class="list-unstyled">
