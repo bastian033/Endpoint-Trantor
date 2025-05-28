@@ -96,7 +96,7 @@
                             <div>
                                 <h6 class="fw-bold">Otros campos</h6>
                                 <ul class="list-unstyled">
-                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'historia', 'nombre_fantasia', 'años_comerciales'] %}
+                                    {% for key, value in resultado.items() if key not in ['razon social', 'rut', '_id', 'tags', 'tags2', 'historia', 'nombre_fantasia', 'años_comerciales'] %}
                                         <li><strong>{{ key }}:</strong> {{ value }}</li>
                                     {% endfor %}
                                 </ul>
@@ -108,7 +108,7 @@
                                         {% for ac in resultado.get('años_comerciales', []) %}
                                             <li class="list-inline-item mb-1">
                                                 <span class="badge bg-info text-dark">
-                                                    {{ ac.año }} <small>({{ ac.origen }})</small>
+                                                    {{ ac.año }}
                                                 </span>
                                             </li>
                                         {% endfor %}
