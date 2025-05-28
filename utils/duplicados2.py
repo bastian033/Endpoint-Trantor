@@ -118,10 +118,10 @@ for rut in obtener_ruts():
     batch.append(InsertOne(base))
     coleccion.delete_many({"rut": rut})
     if len(batch) >= BATCH_SIZE:
-        coleccion.insert_many(batch)
+        coleccion.bulk_write(batch)
         batch = []
 
 if batch:
-    coleccion.insert_many(batch)
+    coleccion.bulk_write(batch)
 
 print("Listo")
