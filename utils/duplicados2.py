@@ -5,9 +5,20 @@ conexion = MongoClient("mongodb://localhost:27017")
 db = conexion["DatosNormalizados"]
 coleccion = db.empresas
 
-ruts = coleccion.distinct("rut")
 BATCH_SIZE = 500
 batch = []
+
+def obtener_ruts():
+    ultimo = None
+    while True:
+        filtro = {"rut": {"$gt": ultimo}} if ultimo else {}
+        doc = coleccion.find(filtro, {"rut": 1}).sort("rut", 1).limit(1)
+        doc = list(doc)
+        if not doc:
+            break
+        rut = doc[0]["rut"]
+        yield rut
+        ultimo = rut
 
 def fusionar_personas(arrays, campo_rut="rut", campo_fecha="fecha_actualizacion"):
     todos = []
@@ -39,7 +50,6 @@ def fusionar_unico_vigente(arrays, campo_fecha="fecha_actualizacion"):
             todos.extend(arr)
     if not todos:
         return []
-    # Agrupa todo en un solo grupo, solo uno vigente (el más reciente)
     items_ordenados = sorted(
         todos,
         key=lambda x: x.get(campo_fecha) or "",
@@ -53,7 +63,6 @@ def fusionar_unico_vigente(arrays, campo_fecha="fecha_actualizacion"):
     return resultado
 
 def fusionar_array(arrays, campo_fecha="fecha_actualizacion"):
-    # Para direcciones y actuacion: puede haber varias vigentes
     todos = []
     for arr in arrays:
         if arr:
@@ -71,11 +80,10 @@ def fusionar_array(arrays, campo_fecha="fecha_actualizacion"):
         )
         for i, item in enumerate(items_ordenados):
             item = dict(item)
-            # Mantiene el campo vigente como venga, puede haber varias vigentes
             resultado.append(item)
     return resultado
 
-for rut in ruts:
+for rut in obtener_ruts():
     docs = list(coleccion.find({"rut": rut}))
     if not docs:
         continue
