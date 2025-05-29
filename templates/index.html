@@ -72,6 +72,17 @@
       function captchaExpirado() {
         document.getElementById('btnBuscar').disabled = true;
       }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form[action="/api/empresa/buscar"]');
+        const btnBuscar = document.getElementById('btnBuscar');
+
+        form.addEventListener('submit', function () {
+          btnBuscar.disabled = true;
+          btnBuscar.innerText = 'Buscando...'; 
+        });
+      });
     </script>
+
 </body>
 </html>
