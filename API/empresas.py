@@ -89,7 +89,7 @@ def buscar_en_base_datos(valor):
 
     try:
         coleccion = db["empresas"]
-        resultados = list(coleccion.find(filtro).limit(50))  # Limitar resultados
+        resultados = list(coleccion.find(filtro).limit(10))  # Limitar resultados
         print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
         for resultado in resultados:
             resultado["_id"] = str(resultado["_id"])

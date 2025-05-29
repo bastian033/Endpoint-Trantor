@@ -28,7 +28,7 @@
             <form action="/api/empresa/buscar" method="get"> 
               <div class="mb-3">
                   <label for="valor" class="form-label">Buscar empresa (razón social, RUT, socio, representante, etc):</label>
-                  <input type="text" id="valor" name="valor" class="form-control" placeholder="Ingresa nombre, RUT o palabra clave" required>
+                  <input type="text" id="valor" name="valor" class="form-control" placeholder="Ingresa nombre, RUT o palabra clave" required minlength="3" maxlength="50">
               </div>
               <div class="cf-turnstile mb-3" data-sitekey="0x4AAAAAABagIANxaSkWp-kT" data-callback="javascriptCallback" data-expired-callback="captchaExpirado" style="text-align: center;"></div>
               <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
