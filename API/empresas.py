@@ -71,20 +71,25 @@ def buscar_empresa():
 def buscar_en_base_datos(valor):
     resultados_totales = []
     try:
-        # Detectar si el valor es un RUT (ej: 12345678-9 o 12345678-k)
+        if not (3 <= len(valor) <= 100):
+            raise ValueError("El valor debe tener entre 3 y 100 caracteres.")
+
         rut_pattern = re.compile(r'^\d{7,8}-[\dkK]$')
         valor_normalizado = normalizar_rut(valor)
+
         if rut_pattern.match(valor_normalizado):
             filtro = {"rut": valor_normalizado}
         else:
-            filtro = {"tags2": {"$regex": valor, "$options": "i"}}
+            valor_escapado = re.escape(valor)
+            filtro = {"tags2": {"$regex": valor_escapado, "$options": "i"}}
+
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
 
     try:
         coleccion = db["empresas"]
-        resultados = list(coleccion.find(filtro))
+        resultados = list(coleccion.find(filtro).limit(50))  # Limitar resultados
         print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
         for resultado in resultados:
             resultado["_id"] = str(resultado["_id"])
@@ -96,6 +101,7 @@ def buscar_en_base_datos(valor):
     except Exception as e:
         print(f"Error al buscar: {e}")
         return None
+
     
 def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()
