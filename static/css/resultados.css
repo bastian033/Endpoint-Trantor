@@ -1,30 +1,49 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f9;
-}
-
-h1 {
-    font-weight: 600;
-}
-
-.card {
-    border-radius: 1.25rem;
-    transition: transform 0.2s ease-in-out;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-}
-
-.card-header {
-    border-radius: 1.25rem 1.25rem 0 0;
-}
-
-ul.list-group li {
-    font-size: 0.95rem;
-}
-
-.badge {
-    font-size: 0.85rem;
-    padding: 0.5em 0.75em;
-}
+        body {
+            background: #f8fafc;
+        }
+        .empresa-card {
+            border-radius: 18px;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
+            border: none;
+            margin-bottom: 2rem;
+            transition: box-shadow 0.2s;
+        }
+        .empresa-card:hover {
+            box-shadow: 0 4px 32px 0 rgba(0,0,0,0.12);
+        }
+        .empresa-header {
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+            color: #fff;
+            padding: 1.2rem 1.5rem;
+        }
+        .empresa-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .empresa-section-title {
+            font-size: 1.05rem;
+            color: #2563eb;
+            margin-top: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .badge-ac {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 1rem;
+            margin-right: 0.3rem;
+        }
+        .list-group-item {
+            border: none;
+            background: transparent;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .empresa-footer {
+            border-radius: 0 0 18px 18px;
+            background: #f1f5f9;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.95rem;
+            color: #64748b;
+        }
