@@ -1,19 +1,37 @@
-        body {
-            background-color: #f9fafb;
-        }
-        .card {
-            border-radius: 1rem;
-        }
-        .card-header {
-            border-top-left-radius: 1rem;
-            border-top-right-radius: 1rem;
-        }
-        .section-title {
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 0.25rem;
-            margin-bottom: 0.5rem;
-        }
-        .badge-info {
-            background-color: #e0f3ff;
-            color: #0d6efd;
-        }
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+    font-size: 2.2rem;
+    color: #343a40;
+    margin-bottom: 2rem;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0;
+}
+
+.card-body h6 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+ul.list-unstyled li {
+    margin-bottom: 0.4rem;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4em 0.6em;
+}
+
+.btn-outline-primary {
+    font-size: 1rem;
+    border-radius: 0.5rem;
+}

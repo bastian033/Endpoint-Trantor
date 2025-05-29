@@ -4,27 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados de Búsqueda</title>
+    <link rel="stylesheet" href="/static/css/resultados.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-
-    </style>
 </head>
 <body>
-    <header class="py-4 bg-light border-bottom mb-4">
-        <div class="container text-center">
-            <h1 class="fw-bold">Resultados de Búsqueda</h1>
-        </div>
-    </header>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Resultados de Búsqueda</h1>
 
-    <main class="container mb-5">
         {% if resultados %}
-            <div class="row g-4">
+            <div class="row row-cols-1 g-4">
                 {% for resultado in resultados %}
-                <div class="col-12">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="col">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center rounded-top-4">
                             <div>
-                                <h5 class="mb-0">{{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}</h5>
+                                <h4 class="mb-0">{{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}</h4>
                                 <small>RUT: {{ resultado.get('rut', 'N/A') }}</small>
                             </div>
                             <span class="badge bg-success">{{ resultado.get('estado', 'Activa') }}</span>
@@ -32,15 +26,17 @@
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <h6 class="section-title">Datos generales</h6>
+                                    <h6 class="fw-bold text-primary">Datos generales</h6>
                                     <ul class="list-unstyled">
+                                        <li><strong>Razón Social:</strong> {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}</li>
+                                        <li><strong>RUT:</strong> {{ resultado.get('rut', 'N/A') }}</li>
                                         <li><strong>Tipo de empresa:</strong> {{ resultado.get('tipo_empresa', 'N/A') }}</li>
                                         <li><strong>Fecha de constitución:</strong> {{ resultado.get('fecha_constitucion', 'N/A') }}</li>
                                         <li><strong>Domicilio:</strong> {{ resultado.get('domicilio', 'N/A') }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6 class="section-title">Actividad</h6>
+                                    <h6 class="fw-bold text-primary">Actividad</h6>
                                     <ul class="list-unstyled">
                                         <li><strong>Giro Principal:</strong> {{ resultado.get('giro_principal', 'N/A') }}</li>
                                         <li><strong>Actividad económica:</strong> {{ resultado.get('actividad_economica', 'N/A') }}</li>
@@ -51,55 +47,62 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <h6 class="section-title">Representantes legales</h6>
+                                    <h6 class="fw-bold text-primary">Representantes legales</h6>
                                     <ul class="list-unstyled">
                                         {% for rep in resultado.get('historia', {}).get('representantes_legales', []) %}
-                                            <li><strong>{{ rep.get('nombre', 'N/A') }}</strong>{% if rep.get('rut') %} ({{ rep.get('rut') }}){% endif %} {% if rep.get('rol') %}- {{ rep.get('rol') }}{% endif %}</li>
+                                            <li>
+                                                <strong>{{ rep.get('nombre', 'N/A') }}</strong>
+                                                {% if rep.get('rut') %} ({{ rep.get('rut') }}){% endif %}
+                                                {% if rep.get('rol') %} - {{ rep.get('rol') }}{% endif %}
+                                            </li>
                                         {% else %}
                                             <li class="text-muted">No hay representantes legales registrados.</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6 class="section-title">Socios</h6>
+                                    <h6 class="fw-bold text-primary">Socios</h6>
                                     <ul class="list-unstyled">
                                         {% for socio in resultado.get('historia', {}).get('socios', []) %}
-                                            <li><strong>{{ socio.get('nombre', 'N/A') }}</strong>{% if socio.get('rut') %} ({{ socio.get('rut') }}){% endif %} {% if socio.get('rol') %}- {{ socio.get('rol') }}{% endif %}</li>
+                                            <li>
+                                                <strong>{{ socio.get('nombre', 'N/A') }}</strong>
+                                                {% if socio.get('rut') %} ({{ socio.get('rut') }}){% endif %}
+                                                {% if socio.get('rol') %} - {{ socio.get('rol') }}{% endif %}
+                                            </li>
                                         {% else %}
                                             <li class="text-muted">No hay socios registrados.</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
                             </div>
-                            {% if resultado.get('nombre_fantasia') %}
                             <div class="mb-3">
-                                <h6 class="section-title">Nombre de fantasía</h6>
+                                <h6 class="fw-bold text-primary">Nombre de fantasía</h6>
                                 <p>{{ resultado.get('nombre_fantasia', 'N/A') }}</p>
                             </div>
-                            {% endif %}
-                            {% if resultado.get('años_comerciales') %}
                             <div class="mb-3">
-                                <h6 class="section-title">Años comerciales</h6>
-                                <ul class="list-inline">
-                                    {% for ac in resultado.get('años_comerciales', []) %}
-                                    <li class="list-inline-item mb-1">
-                                        <span class="badge badge-info px-3 py-2">{{ ac.año }}</span>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                            {% set campos_extra = resultado.items() | selectattr("0", "not in", ["razon social", "rut", "_id", "tags", "tags2", "historia", "nombre_fantasia", "años_comerciales"]) %}
-                            {% if campos_extra | list %}
-                            <div>
-                                <h6 class="section-title">Otros campos</h6>
+                                <h6 class="fw-bold text-primary">Otros campos</h6>
                                 <ul class="list-unstyled">
-                                    {% for key, value in campos_extra %}
-                                        <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                    {% for key, value in resultado.items() %}
+                                        {% if key not in ['razon social', 'rut', '_id', 'tags', 'tags2', 'historia', 'nombre_fantasia', 'años_comerciales'] %}
+                                            <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                        {% endif %}
                                     {% endfor %}
                                 </ul>
                             </div>
-                            {% endif %}
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-primary">Años comerciales</h6>
+                                {% if resultado.get('años_comerciales') %}
+                                    <ul class="list-inline">
+                                        {% for ac in resultado.get('años_comerciales', []) %}
+                                            <li class="list-inline-item mb-1">
+                                                <span class="badge bg-info text-dark">{{ ac.año }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="text-muted">No hay años comerciales registrados.</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,9 +113,10 @@
                 {{ mensaje }}
             </div>
         {% endif %}
+
         <div class="text-center mt-5">
-            <a href="/" class="btn btn-outline-primary px-4 py-2">Volver</a>
+            <a href="/" class="btn btn-outline-primary px-4">Volver</a>
         </div>
-    </main>
+    </div>
 </body>
 </html>
