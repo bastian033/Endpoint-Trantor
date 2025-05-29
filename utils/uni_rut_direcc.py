@@ -31,4 +31,4 @@ if batch:
     coleccion.bulk_write(batch)
     print(f"{total} documentos actualizados...")
 
-print("Proceso finalizado. Total documentos procesados:", total)
+print("Proceso finalizado  total documentos procesados:", total)

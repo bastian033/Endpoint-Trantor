@@ -19,13 +19,23 @@ def normalizar_fecha(fecha):
         except Exception:
             return None
 
+def norm(x):
+    # Normaliza valores nulos y NaN
+    return str(x or "").strip().upper().replace("NAN", "")
+
 def key_direccion(d):
-    # Usamos tipo_direccion, calle y numero como clave
+    # Usa más campos relevantes para deduplicar
     return (
-        str(d.get("tipo_direccion") or "").strip().upper(),
-        str(d.get("calle") or "").strip().upper(),
-        str(d.get("numero") or "").strip().upper(),
+        norm(d.get("tipo_direccion")),
+        norm(d.get("calle")),
+        norm(d.get("numero")),
+        norm(d.get("comuna")),
+        norm(d.get("region")),
     )
+
+def direccion_vacia(d):
+    campos = ["tipo_direccion", "calle", "numero", "comuna", "region"]
+    return all(not (d.get(c) and str(d.get(c)).strip() and str(d.get(c)).upper() != "NAN") for c in campos)
 
 def mapear_direccion(doc):
     return {
@@ -84,7 +94,6 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.direcciones": 1}):
     print(f"  Direcciones existentes: {len(direcciones_existentes)}")
     print(f"  Direcciones nuevas encontradas en origen: {count_nuevas}")
 
-    # Para cada grupo de direcciones (misma clave), dejar solo la más reciente como vigente
     direcciones_final = []
     for grupo in direcciones_dict.values():
         # Ordenar por fecha y luego por vigencia fuente
@@ -94,6 +103,9 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.direcciones": 1}):
             d.pop("fecha_dt", None)
             d.pop("vigencia_fuente", None)
             direcciones_final.append(d)
+
+    # Elimina direcciones completamente vacías
+    direcciones_final = [d for d in direcciones_final if not direccion_vacia(d)]
 
     print(f"  Total direcciones finales para empresa: {len(direcciones_final)}")
     vigentes = sum(1 for d in direcciones_final if d.get("vigente"))
