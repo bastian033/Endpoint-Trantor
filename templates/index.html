@@ -26,8 +26,8 @@
         <div class="card">
             <!-- Solicitud Get al endpoint /empresa/buscar -->
             <form action="/api/empresa/buscar" method="get"> 
-              <div class="mb-3">
-                  <label for="valor" class="form-label" style="text-align: center;">Busca por Rut, Razon social, socio o representante legal!</label>
+              <div class="mb-3" style="align-items: center; color: darkgrey;">
+                  <label for="valor" class="form-label">Busca por Rut, Razon social, socio o representante legal!</label>
                   <input type="text" id="valor" name="valor" class="form-control" placeholder="" required minlength="3" maxlength="50">
               </div>
               <div class="cf-turnstile mb-3" data-sitekey="0x4AAAAAABagIANxaSkWp-kT" data-callback="javascriptCallback" data-expired-callback="captchaExpirado" style="text-align: center;"></div>
