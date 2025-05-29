@@ -5,70 +5,45 @@
     <title>Resultados Empresa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/resultados.css">
+    <style>
+        body { background: #f8fafc; }
+        .empresa-card { border-radius: 18px; box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07); border: none; margin-bottom: 2rem; transition: box-shadow 0.2s; }
+        .empresa-card:hover { box-shadow: 0 4px 32px 0 rgba(0,0,0,0.12); }
+        .empresa-header { border-radius: 18px 18px 0 0; background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%); color: #fff; padding: 1.2rem 1.5rem; }
+        .empresa-title { font-size: 1.1rem; font-weight: 600; }
+        .empresa-section-title { font-size: 1rem; color: #2563eb; margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 500; }
+        .badge-ac { background: #e0f2fe; color: #0369a1; font-size: 0.95rem; margin-right: 0.2rem; }
+        .list-group-item { border: none; background: transparent; padding-left: 0; padding-right: 0; }
+        .empresa-footer { border-radius: 0 0 18px 18px; background: #f1f5f9; padding: 0.7rem 1.5rem; font-size: 0.95rem; color: #64748b; }
+        .card-body { font-size: 0.97rem; }
+    </style>
 </head>
 <body>
     <div class="container py-5">
         <h1 class="text-center mb-5 text-primary fw-bold">Resultados de Empresas</h1>
         {% if resultados %}
-            <div class="row justify-content-center">
+            <div class="row g-4">
                 {% for resultado in resultados %}
-                <div class="col-12 col-md-10 col-lg-8">
-                    <div class="card empresa-card">
-                        <div class="empresa-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                            <div>
-                                <div class="empresa-title">
-                                    {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
-                                </div>
-                                <div class="small">RUT: <span class="fw-semibold">{{ resultado.get('rut', 'N/A') }}</span></div>
+                <div class="col-12 col-md-6 col-lg-4 d-flex">
+                    <div class="card empresa-card flex-fill">
+                        <div class="empresa-header">
+                            <div class="empresa-title">
+                                {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
                             </div>
-                            <div class="mt-2 mt-md-0">
-                                <span class="badge bg-success fs-6">{{ resultado.get('estado', 'Activa') }}</span>
-                            </div>
+                            <div class="small">RUT: <span class="fw-semibold">{{ resultado.get('rut', 'N/A') }}</span></div>
                         </div>
                         <div class="card-body">
-                            <div class="empresa-section-title"><i class="fas fa-building"></i> Información General</div>
+                            <div class="empresa-section-title"><i class="fas fa-building"></i> General</div>
                             <ul class="list-group mb-2">
-                                <li class="list-group-item"><strong>Tipo de empresa:</strong> {{ resultado.get('tipo_empresa', 'N/A') }}</li>
-                                <li class="list-group-item"><strong>Fecha de constitución:</strong> {{ resultado.get('fecha_constitucion', 'N/A') }}</li>
+                                <li class="list-group-item"><strong>Tipo:</strong> {{ resultado.get('tipo_empresa', 'N/A') }}</li>
+                                <li class="list-group-item"><strong>Constitución:</strong> {{ resultado.get('fecha_constitucion', 'N/A') }}</li>
                                 <li class="list-group-item"><strong>Domicilio:</strong> {{ resultado.get('domicilio', 'N/A') }}</li>
-                                <li class="list-group-item"><strong>Nombre de fantasía:</strong> {{ resultado.get('nombre_fantasia', 'N/A') }}</li>
                             </ul>
-
-                            <div class="empresa-section-title"><i class="fas fa-industry"></i> Actividad Económica</div>
+                            <div class="empresa-section-title"><i class="fas fa-industry"></i> Económica</div>
                             <ul class="list-group mb-2">
-                                <li class="list-group-item"><strong>Giro principal:</strong> {{ resultado.get('giro_principal', 'N/A') }}</li>
-                                <li class="list-group-item"><strong>Actividad económica:</strong> {{ resultado.get('actividad_economica', 'N/A') }}</li>
-                                <li class="list-group-item"><strong>Código SII:</strong> {{ resultado.get('codigo_sii', 'N/A') }}</li>
-                                <li class="list-group-item"><strong>Categoría:</strong> {{ resultado.get('categoria', 'N/A') }}</li>
+                                <li class="list-group-item"><strong>Giro:</strong> {{ resultado.get('giro_principal', 'N/A') }}</li>
+                                <li class="list-group-item"><strong>Actividad:</strong> {{ resultado.get('actividad_economica', 'N/A') }}</li>
                             </ul>
-
-                            <div class="empresa-section-title"><i class="fas fa-user-tie"></i> Representantes Legales</div>
-                            {% if resultado.get('historia', {}).get('representantes_legales') %}
-                                <ul class="list-group mb-2">
-                                    {% for rep in resultado['historia']['representantes_legales'] %}
-                                    <li class="list-group-item">
-                                        {{ rep.nombre }}{% if rep.rut %} ({{ rep.rut }}){% endif %}{% if rep.rol %} - {{ rep.rol }}{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <div class="text-muted mb-2">Sin representantes registrados.</div>
-                            {% endif %}
-
-                            <div class="empresa-section-title"><i class="fas fa-users"></i> Socios</div>
-                            {% if resultado.get('historia', {}).get('socios') %}
-                                <ul class="list-group mb-2">
-                                    {% for socio in resultado['historia']['socios'] %}
-                                    <li class="list-group-item">
-                                        {{ socio.nombre }}{% if socio.rut %} ({{ socio.rut }}){% endif %}{% if socio.rol %} - {{ socio.rol }}{% endif %}
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <div class="text-muted mb-2">Sin socios registrados.</div>
-                            {% endif %}
-
                             <div class="empresa-section-title"><i class="fas fa-calendar-alt"></i> Años Comerciales</div>
                             {% if resultado.get('años_comerciales') %}
                                 <div>
@@ -77,17 +52,8 @@
                                     {% endfor %}
                                 </div>
                             {% else %}
-                                <div class="text-muted mb-2">Sin registros de años comerciales.</div>
+                                <div class="text-muted mb-2">Sin años comerciales.</div>
                             {% endif %}
-
-                            <div class="empresa-section-title"><i class="fas fa-database"></i> Datos adicionales</div>
-                            <ul class="list-group small">
-                                {% for key, value in resultado.items() %}
-                                    {% if key not in ['razon social', 'rut', '_id', 'tags', 'tags2', 'historia', 'nombre_fantasia', 'años_comerciales'] %}
-                                        <li class="list-group-item"><strong>{{ key }}:</strong> {{ value }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
                         </div>
                         <div class="empresa-footer text-end">
                             <a href="/" class="btn btn-outline-primary btn-sm">⬅ Volver</a>
