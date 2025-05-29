@@ -22,7 +22,7 @@
                         <span class="fw-semibold">
                             {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
                         </span>
-                        <span class="ms-3 text-secondary">RUT: {{ resultado.get('rut', 'N/A') }}</span>
+                        <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
                     </button>
                 </h2>
                 <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
