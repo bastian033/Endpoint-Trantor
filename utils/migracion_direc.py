@@ -3,7 +3,7 @@ from datetime import datetime
 
 conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
-col_origen = db_origen.PUB_NOM_SUCURSAL 
+col_origen = db_origen.PUB_NOM_SUCURSAL
 
 db_destino = conexion["DatosNormalizados"]
 col_destino = db_destino.empresas
@@ -27,7 +27,7 @@ def norm(x):
     return "" if v in ("NAN", "NONE", "NULL", "") else v
 
 def key_direccion(d):
-    # Clave robusta para deduplicar direcciones
+    # Clave robusta para deduplicar direcciones (incluye ciudad)
     return (
         norm(d.get("tipo_direccion")),
         norm(d.get("calle")),
@@ -35,11 +35,12 @@ def key_direccion(d):
         norm(d.get("departamento")),
         norm(d.get("comuna")),
         norm(d.get("region")),
+        norm(d.get("ciudad")),
     )
 
 def direccion_vacia(d):
-    campos = ["tipo_direccion", "calle", "numero", "comuna", "region"]
-    return all(not (d.get(c) and str(d.get(c)).strip() and str(d.get(c)).upper() not in ("NAN", "NONE", "NULL", "")) for c in campos)
+    campos = ["tipo_direccion", "calle", "numero", "comuna", "region", "ciudad"]
+    return all(norm(d.get(c)) == "" for c in campos)
 
 def mapear_direccion(doc):
     return {
