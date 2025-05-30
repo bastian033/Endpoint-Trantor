@@ -3,7 +3,7 @@ from datetime import datetime
 
 conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
-col_origen = db_origen.PUB_NOM_DOMICILIO
+col_origen = db_origen.PUB_NOM_SUCURSAL 
 
 db_destino = conexion["DatosNormalizados"]
 col_destino = db_destino.empresas
@@ -11,29 +11,35 @@ col_destino = db_destino.empresas
 def normalizar_fecha(fecha):
     if not fecha or fecha in ("NaN", "nan"):
         return None
-    try:
-        return datetime.strptime(fecha, "%Y-%m-%d")
-    except Exception:
+    # Soporta formatos "YYYY-MM-DD" y "DD-MM-YYYY"
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
         try:
-            return datetime.fromisoformat(fecha)
+            return datetime.strptime(fecha, fmt)
         except Exception:
-            return None
+            continue
+    try:
+        return datetime.fromisoformat(fecha)
+    except Exception:
+        return None
 
 def norm(x):
-    return str(x or "").strip().upper().replace("NAN", "")
+    v = str(x or "").strip().upper()
+    return "" if v in ("NAN", "NONE", "NULL", "") else v
 
 def key_direccion(d):
+    # Clave robusta para deduplicar direcciones
     return (
         norm(d.get("tipo_direccion")),
         norm(d.get("calle")),
         norm(d.get("numero")),
+        norm(d.get("departamento")),
         norm(d.get("comuna")),
         norm(d.get("region")),
     )
 
 def direccion_vacia(d):
     campos = ["tipo_direccion", "calle", "numero", "comuna", "region"]
-    return all(not (d.get(c) and str(d.get(c)).strip() and str(d.get(c)).upper() != "NAN") for c in campos)
+    return all(not (d.get(c) and str(d.get(c)).strip() and str(d.get(c)).upper() not in ("NAN", "NONE", "NULL", "")) for c in campos)
 
 def mapear_direccion(doc):
     return {
@@ -48,13 +54,13 @@ def mapear_direccion(doc):
         "comuna": doc.get("COMUNA"),
         "region": doc.get("REGION"),
         "origen": "SII",
-        "vigencia_fuente": doc.get("VIGENCIA", None)
+        "vigencia_sii": doc.get("VIGENCIA", None)
     }
 
 procesados = 0
 actualizados = 0
 
-print("Iniciando migración de direcciones...")
+print("Iniciando migración de direcciones (evitando duplicados)...")
 total_empresas = col_destino.count_documents({})
 print(f"Total de empresas a procesar: {total_empresas}")
 
@@ -65,46 +71,29 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.direcciones": 1}):
 
     print(f"\nProcesando empresa RUT: {rut}")
 
-    # Cargar direcciones existentes
-    direcciones_existentes = empresa.get("historia", {}).get("direcciones", [])
-    direcciones_dict = {}
+    # Migrar todas las direcciones del origen para este rut
+    direcciones = [mapear_direccion(doc) for doc in col_origen.find({"rut_completo": rut})]
+    print(f"  Direcciones encontradas en origen: {len(direcciones)}")
 
-    # Indexar existentes por clave
-    for d in direcciones_existentes:
+    # Deduplicar: solo una dirección por clave, la más reciente
+    grupos = {}
+    for d in direcciones:
         clave = key_direccion(d)
         fecha = normalizar_fecha(d.get("fecha_actualizacion"))
-        direcciones_dict.setdefault(clave, []).append({
-            **d,
-            "fecha_dt": fecha,
-            "vigencia_fuente": d.get("vigencia_fuente", None)
-        })
+        if clave in grupos:
+            existente = grupos[clave]
+            fecha_existente = normalizar_fecha(existente.get("fecha_actualizacion"))
+            if fecha and (not fecha_existente or fecha > fecha_existente):
+                grupos[clave] = d
+        else:
+            grupos[clave] = d
 
-    # Agregar/migrar desde origen
-    count_nuevas = 0
-    for doc in col_origen.find({"rut_completo": rut}):
-        nueva = mapear_direccion(doc)
-        clave = key_direccion(nueva)
-        fecha = normalizar_fecha(nueva.get("fecha_actualizacion"))
-        nueva["fecha_dt"] = fecha
-        direcciones_dict.setdefault(clave, []).append(nueva)
-        count_nuevas += 1
-
-    print(f"  Direcciones existentes: {len(direcciones_existentes)}")
-    print(f"  Direcciones nuevas encontradas en origen: {count_nuevas}")
-
+    # Asignar 'vigente' booleano según la lógica de SII
     direcciones_final = []
-    for grupo in direcciones_dict.values():
-        # Ordenar por fecha y luego por vigencia fuente
-        grupo.sort(key=lambda x: ((x["fecha_dt"] or datetime.min), x.get("vigencia_fuente") == "S"), reverse=True)
-        for i, d in enumerate(grupo):
-            # Solo guardar el campo 'vigente' como booleano
-            if i == 0 and d.get("vigencia_fuente") == "S":
-                d["vigente"] = True
-            else:
-                d["vigente"] = False
-            d.pop("fecha_dt", None)
-            d.pop("vigencia_fuente", None)
-            direcciones_final.append(d)
+    for d in grupos.values():
+        d["vigente"] = True if d.get("vigencia_sii") == "S" else False
+        d.pop("vigencia_sii", None)
+        direcciones_final.append(d)
 
     # Elimina direcciones completamente vacías
     direcciones_final = [d for d in direcciones_final if not direccion_vacia(d)]
