@@ -3,7 +3,7 @@ from datetime import datetime
 
 conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
-col_origen = db_origen.PUB_NOM_SUCURSAL
+col_origen = db_origen.PUB_NOM_DOMICILIO
 
 db_destino = conexion["DatosNormalizados"]
 col_destino = db_destino.empresas
