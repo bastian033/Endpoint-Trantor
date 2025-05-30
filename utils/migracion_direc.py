@@ -20,11 +20,9 @@ def normalizar_fecha(fecha):
             return None
 
 def norm(x):
-    # Normaliza valores nulos y NaN
     return str(x or "").strip().upper().replace("NAN", "")
 
 def key_direccion(d):
-    # Usa más campos relevantes para deduplicar
     return (
         norm(d.get("tipo_direccion")),
         norm(d.get("calle")),
@@ -99,7 +97,11 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.direcciones": 1}):
         # Ordenar por fecha y luego por vigencia fuente
         grupo.sort(key=lambda x: ((x["fecha_dt"] or datetime.min), x.get("vigencia_fuente") == "S"), reverse=True)
         for i, d in enumerate(grupo):
-            d["vigente"] = (i == 0)
+            # Solo guardar el campo 'vigente' como booleano
+            if i == 0 and d.get("vigencia_fuente") == "S":
+                d["vigente"] = True
+            else:
+                d["vigente"] = False
             d.pop("fecha_dt", None)
             d.pop("vigencia_fuente", None)
             direcciones_final.append(d)
