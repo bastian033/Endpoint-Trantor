@@ -5,94 +5,153 @@
     <title>Resultados Empresa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/resultados.css') }}" rel="stylesheet">
     <style>
-        .accordion-button:not(.collapsed) { background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%); color: #fff; }
+        .badge-ac { background: #2563eb; color: #fff; margin-right: 2px; }
+        .table-sm td, .table-sm th { padding: .3rem; }
+        .section-title { font-weight: bold; margin-top: 1.5rem; }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <h1 class="text-center mb-5 text-primary fw-bold">Resultados de Empresas</h1>
-        {% if resultados %}
-        <div class="accordion" id="empresasAccordion">
-            {% for resultado in resultados %}
-            <div class="accordion-item mb-3">
-                <h2 class="accordion-header" id="heading{{ loop.index }}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
-                        <span class="fw-semibold">
-                            {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
-                        </span>
-                        <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
-                    </button>
-                </h2>
-                <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
-                    <div class="accordion-body">
-                        <div class="empresa-section-title"><i class="fas fa-building"></i> General</div>
-                        <ul class="list-group mb-2">
-                            <li class="list-group-item"><strong>Tipo de empresa:</strong> {{ resultado.get('tipo_empresa', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Fecha de constitución:</strong> {{ resultado.get('fecha_constitucion', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Domicilio:</strong> {{ resultado.get('domicilio', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Nombre de fantasía:</strong> {{ resultado.get('nombre_fantasia', 'N/A') }}</li>
-                        </ul>
-                        <div class="empresa-section-title"><i class="fas fa-industry"></i> Actividad Económica</div>
-                        <ul class="list-group mb-2">
-                            <li class="list-group-item"><strong>Giro principal:</strong> {{ resultado.get('giro_principal', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Actividad económica:</strong> {{ resultado.get('actividad_economica', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Código SII:</strong> {{ resultado.get('codigo_sii', 'N/A') }}</li>
-                            <li class="list-group-item"><strong>Categoría:</strong> {{ resultado.get('categoria', 'N/A') }}</li>
-                        </ul>
-                        <div class="empresa-section-title"><i class="fas fa-user-tie"></i> Representantes Legales</div>
-                        {% if resultado.get('historia', {}).get('representantes_legales') %}
-                            <ul class="list-group mb-2">
-                                {% for rep in resultado['historia']['representantes_legales'] %}
-                                <li class="list-group-item">
-                                    {{ rep.nombre }}{% if rep.rut %} ({{ rep.rut }}){% endif %}{% if rep.rol %} - {{ rep.rol }}{% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="text-muted mb-2">Sin representantes registrados.</div>
-                        {% endif %}
-                        <div class="empresa-section-title"><i class="fas fa-users"></i> Socios</div>
-                        {% if resultado.get('historia', {}).get('socios') %}
-                            <ul class="list-group mb-2">
-                                {% for socio in resultado['historia']['socios'] %}
-                                <li class="list-group-item">
-                                    {{ socio.nombre }}{% if socio.rut %} ({{ socio.rut }}){% endif %}{% if socio.rol %} - {{ socio.rol }}{% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <div class="text-muted mb-2">Sin socios registrados.</div>
-                        {% endif %}
-                        <div class="empresa-section-title"><i class="fas fa-calendar-alt"></i> Años Comerciales</div>
-                        {% if resultado.get('años_comerciales') %}
-                            <div>
-                                {% for ac in resultado['años_comerciales'] %}
-                                <span class="badge badge-ac">{{ ac.año }}</span>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="text-muted mb-2">Sin registros de años comerciales.</div>
+<div class="container py-4">
+    <h1 class="text-center mb-4 text-primary fw-bold">Resultados de Empresas</h1>
+    {% if resultados %}
+    <div class="accordion" id="empresasAccordion">
+        {% for resultado in resultados %}
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                    <span class="fw-semibold">
+                        {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
+                    </span>
+                    <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
+                </button>
+            </h2>
+            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
+                <div class="accordion-body">
+
+                    <!-- Razón Social -->
+                    <div class="section-title"><i class="fas fa-id-card"></i> Razón Social</div>
+                    <ul class="list-group mb-2">
+                        {% for rs in resultado.get('historia', {}).get('razon_social', []) %}
+                        <li class="list-group-item">
+                            <strong>{{ rs.razon_social }}</strong>
+                            {% if rs.codigo_sociedad %} <span class="text-muted">({{ rs.codigo_sociedad }})</span>{% endif %}
+                            {% if rs.vigente %}<span class="badge bg-success ms-2">Vigente</span>{% endif %}
+                            {% if rs.fecha_actualizacion %}<span class="ms-2">Actualización: {{ rs.fecha_actualizacion }}</span>{% endif %}
+                            {% if rs.fecha_termino %}<span class="ms-2">Término: {{ rs.fecha_termino }}</span>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Direcciones -->
+                    <div class="section-title"><i class="fas fa-map-marker-alt"></i> Direcciones</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th><th>Calle</th><th>Número</th><th>Depto</th><th>Ciudad</th><th>Comuna</th><th>Región</th><th>Vigente</th><th>Actualización</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for d in resultado.get('historia', {}).get('direcciones', []) %}
+                                <tr>
+                                    <td>{{ d.tipo_direccion }}</td>
+                                    <td>{{ d.calle }}</td>
+                                    <td>{{ d.numero }}</td>
+                                    <td>{{ d.departamento }}</td>
+                                    <td>{{ d.ciudad }}</td>
+                                    <td>{{ d.comuna }}</td>
+                                    <td>{{ d.region }}</td>
+                                    <td>{% if d.vigente %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                                    <td>{{ d.fecha_actualizacion }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Actividades Económicas -->
+                    <div class="section-title"><i class="fas fa-industry"></i> Actividades Económicas</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Actividad</th><th>Rubro</th><th>Subrubro</th><th>Comuna</th><th>Región</th><th>Inicio</th><th>Término</th><th>Vigente</th><th>Principal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for ae in resultado.get('historia', {}).get('actividades_economicas', []) %}
+                                <tr>
+                                    <td>{{ ae.actividad }}</td>
+                                    <td>{{ ae.rubro }}</td>
+                                    <td>{{ ae.subrubro }}</td>
+                                    <td>{{ ae.comuna }}</td>
+                                    <td>{{ ae.region }}</td>
+                                    <td>{{ ae.fecha_inicio_actividades }}</td>
+                                    <td>{{ ae.fecha_termino_actividades }}</td>
+                                    <td>{% if ae.vigente %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                                    <td>{% if ae.principal %}<span class="badge bg-primary">Principal</span>{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Actuaciones -->
+                    <div class="section-title"><i class="fas fa-gavel"></i> Actuaciones</div>
+                    <ul class="list-group mb-2">
+                        {% for act in resultado.get('historia', {}).get('actuacion', []) %}
+                        <li class="list-group-item">
+                            <strong>Tipo:</strong> {{ act.tipo_actuacion or 'N/A' }},
+                            <strong>Fecha aprobación SII:</strong> {{ act.fecha_aprobacion_SII or 'N/A' }},
+                            <strong>Descripción:</strong> {{ act.descripcion or 'N/A' }},
+                            <strong>Origen:</strong> {{ act.origen or 'N/A' }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Años Comerciales -->
+                    <div class="section-title"><i class="fas fa-calendar-alt"></i> Años Comerciales</div>
+                    <div>
+                        {% for ac in resultado.get('años_comerciales', []) %}
+                        <span class="badge badge-ac">{{ ac.año }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="section-title"><i class="fas fa-tags"></i> Tags</div>
+                    <div>
+                        {% for tag in resultado.get('tags', []) %}
+                        <span class="badge bg-info text-dark">{{ tag }}</span>
+                        {% endfor %}
+                        {% if resultado.get('tags2') %}
+                        <span class="badge bg-info text-dark">{{ resultado.get('tags2') }}</span>
                         {% endif %}
                     </div>
+
+                    <!-- Fecha subida datos -->
+                    <div class="mt-2">
+                        <strong>Fecha subida datos:</strong> {{ resultado.get('fecha_subida_datos', 'N/A') }}
+                    </div>
+
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-            <div class="alert alert-warning text-center">
-                {{ mensaje }}
-            </div>
-            <div class="text-center mt-4">
-                <a href="/" class="btn btn-lg btn-outline-primary">⬅ Volver</a>
-            </div>
-        {% endif %}
-            <div class="text-center mt-4">
-                <a href="/" class="btn btn-sm btn-outline-primary">⬅ Volver</a>
-            </div>
+        {% endfor %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    {% else %}
+        <div class="alert alert-warning text-center">
+            {{ mensaje }}
+        </div>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-lg btn-outline-primary">⬅ Volver</a>
+        </div>
+    {% endif %}
+    <div class="text-center mt-4">
+        <a href="/" class="btn btn-sm btn-outline-primary">⬅ Volver</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
