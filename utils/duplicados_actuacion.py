@@ -53,10 +53,11 @@ for empresa in cursor:
     # 1. Trae actuaciones desde todas las colecciones de origen
     actuaciones_gob = []
     for db in dbs_origen:
-        # Busca en todas las colecciones de la base de datos de origen
         for nombre_col in db.list_collection_names():
             col = db[nombre_col]
-            actuaciones_gob.extend([mapear_actuacion(doc) for doc in col.find({"RUT": rut})])
+            for doc in col.find({"RUT": {"$exists": True}}):
+                if norm(doc.get("RUT")) == norm(rut):
+                    actuaciones_gob.append(mapear_actuacion(doc))
 
     print(f"  Actuaciones encontradas en origen: {len(actuaciones_gob)}")
 
