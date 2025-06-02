@@ -78,7 +78,7 @@ for empresa in cursor:
     actividades_sii = []
     for nombre_col in colecciones_origen:
         col = db_origen[nombre_col]
-        actividades_sii.extend([mapear_actividad(doc) for doc in col.find({"rut_completo": rut})])
+        actividades_sii.extend([mapear_actividad(doc) for doc in col.find({"rut_unificado": rut})])
     print(f"  Actividades SII encontradas en origen: {len(actividades_sii)}")
 
     # 2. Deduplicar SII
