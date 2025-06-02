@@ -17,7 +17,7 @@ col_destino = db_destino.empresas
 BATCH_SIZE = 200
 
 def normalizar_fecha(fecha):
-    if not fecha or fecha in ("NaN", "nan"):
+    if not fecha or str(fecha).upper() in ("NAN", "NONE", "NULL", ""):
         return None
     for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
         try:
@@ -85,10 +85,13 @@ for empresa in cursor:
     grupos = {}
     for d in actividades_sii:
         clave = key_actividad(d)
+        # Debug: muestra la clave para ver si hay diferencias invisibles
+        # print(f"Clave deduplicación: {clave}")
         fecha = normalizar_fecha(d.get("fecha_inicio_actividades"))
         if clave in grupos:
             existente = grupos[clave]
             fecha_existente = normalizar_fecha(existente.get("fecha_inicio_actividades"))
+            # Si ambas fechas son None, solo deja uno (el primero)
             if fecha and (not fecha_existente or fecha > fecha_existente):
                 grupos[clave] = d
         else:
