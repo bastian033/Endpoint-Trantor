@@ -58,6 +58,10 @@ def mapear_actividad(doc):
         "principal": None   # Se ajusta después
     }
 
+def actividad_vacia(d):
+    campos = ["actividad", "codigo_sii", "rubro", "subrubro"]
+    return all(norm(d.get(c)) == "" for c in campos)
+
 procesados = 0
 actualizados = 0
 
@@ -85,19 +89,19 @@ for empresa in cursor:
     grupos = {}
     for d in actividades_sii:
         clave = key_actividad(d)
-        # Debug: muestra la clave para ver si hay diferencias invisibles
-        # print(f"Clave deduplicación: {clave}")
         fecha = normalizar_fecha(d.get("fecha_inicio_actividades"))
         if clave in grupos:
             existente = grupos[clave]
             fecha_existente = normalizar_fecha(existente.get("fecha_inicio_actividades"))
-            # Si ambas fechas son None, solo deja uno (el primero)
             if fecha and (not fecha_existente or fecha > fecha_existente):
                 grupos[clave] = d
         else:
             grupos[clave] = d
 
     actividades_sii_final = list(grupos.values())
+
+    # Elimina actividades completamente vacías
+    actividades_sii_final = [d for d in actividades_sii_final if not actividad_vacia(d)]
 
     # 3. Determinar vigencia y principal
     candidatas_vigentes = [
