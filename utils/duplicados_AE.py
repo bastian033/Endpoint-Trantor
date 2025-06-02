@@ -16,6 +16,10 @@ col_destino = db_destino.empresas
 
 BATCH_SIZE = 200
 
+def norm(x):
+    v = str(x or "").strip().upper()
+    return "" if v in ("NAN", "NONE", "NULL", "") else v
+
 def normalizar_fecha(fecha):
     if not fecha or str(fecha).upper() in ("NAN", "NONE", "NULL", ""):
         return None
@@ -29,43 +33,41 @@ def normalizar_fecha(fecha):
     except Exception:
         return None
 
-def norm(x):
-    v = str(x or "").strip().upper()
-    return "" if v in ("NAN", "NONE", "NULL", "") else v
-
 def key_actividad(d):
     return (
         norm(d.get("actividad")),
         norm(d.get("codigo_sii")),
-        norm(d.get("fecha_inicio_actividades")),
-        norm(d.get("fecha_termino_actividades")),
         norm(d.get("rubro")),
         norm(d.get("subrubro")),
+        norm(d.get("region")),
+        norm(d.get("comuna")),
     )
 
 def mapear_actividad(doc):
     return {
         "giro": doc.get("GIRO"),
-        "actividad": doc.get("ACTIVIDAD"),
+        "actividad": doc.get("Actividad económica") or doc.get("ACTIVIDAD"),
         "codigo_sii": doc.get("CODIGO_SII"),
-        "rubro": doc.get("RUBRO"),
-        "subrubro": doc.get("SUBRUBRO"),
+        "rubro": doc.get("Rubro económico") or doc.get("RUBRO"),
+        "subrubro": doc.get("Subrubro económico") or doc.get("SUBRUBRO"),
+        "region": doc.get("Región") or doc.get("REGION"),
+        "comuna": doc.get("Comuna") or doc.get("COMUNA"),
         "fecha_actualizacion": doc.get("FECHA_ACTUALIZACION"),
-        "fecha_inicio_actividades": doc.get("FECHA_INICIO_ACTIVIDADES"),
-        "fecha_termino_actividades": doc.get("FECHA_TERMINO_ACTIVIDADES"),
+        "fecha_inicio_actividades": doc.get("Fecha inicio de actividades vige") or doc.get("FECHA_INICIO_ACTIVIDADES"),
+        "fecha_termino_actividades": doc.get("Fecha término de giro") or doc.get("FECHA_TERMINO_ACTIVIDADES"),
         "origen": "SII",
         "vigente": None,    # Se ajusta después
         "principal": None   # Se ajusta después
     }
 
 def actividad_vacia(d):
-    campos = ["actividad", "codigo_sii", "rubro", "subrubro"]
+    campos = ["actividad", "codigo_sii", "rubro", "subrubro", "region", "comuna"]
     return all(norm(d.get(c)) == "" for c in campos)
 
 procesados = 0
 actualizados = 0
 
-print("Iniciando migración de actividades económicas (evitando duplicados, por lotes)...")
+print("Iniciando migración de actividades económicas (deduplicación robusta, por lotes)...")
 total_empresas = col_destino.count_documents({})
 print(f"Total de empresas a procesar: {total_empresas}")
 
@@ -85,20 +87,29 @@ for empresa in cursor:
         actividades_sii.extend([mapear_actividad(doc) for doc in col.find({"rut_unificado": rut})])
     print(f"  Actividades SII encontradas en origen: {len(actividades_sii)}")
 
-    # 2. Deduplicar SII
+    # 2. Agrupa por clave robusta
     grupos = {}
     for d in actividades_sii:
         clave = key_actividad(d)
-        fecha = normalizar_fecha(d.get("fecha_inicio_actividades"))
-        if clave in grupos:
-            existente = grupos[clave]
-            fecha_existente = normalizar_fecha(existente.get("fecha_inicio_actividades"))
-            if fecha and (not fecha_existente or fecha > fecha_existente):
-                grupos[clave] = d
-        else:
-            grupos[clave] = d
+        grupos.setdefault(clave, []).append(d)
 
-    actividades_sii_final = list(grupos.values())
+    actividades_sii_final = []
+    for grupo in grupos.values():
+        # Agrupa por fecha de término
+        subgrupos = {}
+        for d in grupo:
+            fecha_termino = norm(d.get("fecha_termino_actividades"))
+            subgrupos.setdefault(fecha_termino, []).append(d)
+        for sub in subgrupos.values():
+            # Si hay varias, elige la de año comercial más reciente, o la primera si no hay
+            elegido = sub[0]
+            for cand in sub:
+                # Si hay campo "Año comercial", elige el más alto
+                ac_elegido = int(elegido.get("Año comercial", 0)) if elegido.get("Año comercial") else 0
+                ac_cand = int(cand.get("Año comercial", 0)) if cand.get("Año comercial") else 0
+                if ac_cand > ac_elegido:
+                    elegido = cand
+            actividades_sii_final.append(elegido)
 
     # Elimina actividades completamente vacías
     actividades_sii_final = [d for d in actividades_sii_final if not actividad_vacia(d)]
@@ -108,14 +119,18 @@ for empresa in cursor:
         d for d in actividades_sii_final if norm(d.get("fecha_termino_actividades")) == ""
     ]
     if candidatas_vigentes:
-        principal = max(
+        # Principal: la de fecha de inicio más antigua (o más reciente si prefieres)
+        principal = min(
             candidatas_vigentes,
-            key=lambda x: normalizar_fecha(x.get("fecha_inicio_actividades")) or datetime.min
+            key=lambda x: normalizar_fecha(x.get("fecha_inicio_actividades")) or datetime.max
         )
         for d in actividades_sii_final:
             if d is principal:
                 d["vigente"] = True
                 d["principal"] = True
+            elif d in candidatas_vigentes:
+                d["vigente"] = True
+                d["principal"] = False
             else:
                 d["vigente"] = False
                 d["principal"] = False
