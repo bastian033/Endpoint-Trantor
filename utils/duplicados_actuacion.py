@@ -31,6 +31,10 @@ def mapear_actuacion(doc):
         "origen": "DatosGob",
     }
 
+def actuacion_vacia(d):
+    campos = ["tipo_actuacion", "fecha_aprobacion_SII", "descripcion"]
+    return all(norm(d.get(c)) == "" for c in campos)
+
 procesados = 0
 
 print("Iniciando deduplicación de actuaciones (DatosGob2013-2025)...")
@@ -75,6 +79,9 @@ for empresa in cursor:
 
     # 4. Unir y guardar
     actuaciones_final = actuaciones_sii + actuaciones_gob_final
+
+    # Elimina actuaciones completamente vacías
+    actuaciones_final = [a for a in actuaciones_final if not actuacion_vacia(a)]
 
     print(f"  Total actuaciones finales para empresa: {len(actuaciones_final)}")
 
