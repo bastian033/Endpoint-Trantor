@@ -79,7 +79,7 @@ class ScraperDatosGob:
             match = re.search(r"(20\d{2})", nombre_archivo)
             anio = match.group(1) if match else "desconocido"
 
-            coleccion = self.conexion_db[anio]
+            coleccion = self.conexion_db[f"DatosGob{anio}"]
 
             with open(ruta_archivo, newline='', encoding='utf-8') as csvfile:
                 lector = csv.DictReader(csvfile)

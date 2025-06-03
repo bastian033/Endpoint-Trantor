@@ -10,14 +10,17 @@ def ejecutar(nombre, comando):
     print(f"--- {nombre} finalizado correctamente ---\n")
 
 if __name__ == "__main__":
+
+    # Primero para los datos de DatosGob
+
     # 1. para ejecutar el scraper
-    ejecutar("Scraper DatosGob", ["python", "scrapers/scraper_sii.py"])
+    ejecutar("Scraper DatosGob", ["python", "scrapers/scraper_datosgob.py"])
     
     # 2. para ejecutar la migracion 
-    ejecutar("Migración SII", ["python", "utils/migracionSII.py"])
+    ejecutar("Migracion DatosGob", ["python", "utils/migracionDG.py"])
     
     # 3. para ejecutar la limpieza
-    ejecutar("Limpieza SII", ["python", "utils/limpiezaSII.py"]) 
+    ejecutar("Limpieza DatosGob", ["python", "utils/limpiezaSII.py"]) 
 
     
-    print("Orquestador SII: Proceso completo.")
+    print("Orquestador DatosGob: Proceso completo.")
