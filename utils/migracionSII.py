@@ -61,6 +61,7 @@ for nombre_coleccion in colecciones_especificas:
                         {
                             "vigente": True,
                             "fecha_actualizacion": fecha_inicio,
+                            "fecha_subida_datos": fecha_guardado,
                             "tipo_direccion": None,
                             "calle": None,
                             "numero": None,
@@ -78,6 +79,7 @@ for nombre_coleccion in colecciones_especificas:
                             "razon_social": razon_social,
                             "codigo_sociedad": codigo_sociedad,
                             "fecha_actualizacion": fecha_inicio,
+                            "fecha_subida_datos": fecha_guardado,
                             "origen": "SII",
                             "vigente": True
                         }
@@ -92,6 +94,7 @@ for nombre_coleccion in colecciones_especificas:
                             "fecha_actualizacion": fecha_inicio,
                             "fecha_inicio_actividades": fecha_inicio,
                             "fecha_termino_actividades": fecha_termino,
+                            "fecha_subida_datos": fecha_guardado,
                             "origen": "SII",
                             "vigente": True
                         }
@@ -101,6 +104,7 @@ for nombre_coleccion in colecciones_especificas:
                             "tipo_actuacion": None,
                             "fecha_aprobacion_SII": None,
                             "descripcion": None,
+                            "fecha_subida_datos": fecha_guardado,
                             "origen": "SII"
                         }
                     ]

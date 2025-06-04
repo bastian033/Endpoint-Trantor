@@ -2,7 +2,7 @@ import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from scraper import DiarioOficialScraper
+from scrapers.scraper_diario_oficial import DiarioOficialScraper
 from pymongo import MongoClient
 import shutil
 import requests

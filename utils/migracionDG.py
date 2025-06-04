@@ -1,5 +1,5 @@
 from datetime import datetime
-from db_origen import conexion_base_datos as conexion_base_datos_origen
+from db_origen import conexion_base_datos_origen
 from db_destino import conexion_base_datos as conexion_base_datos_destino
 
 class MigracionDG:
