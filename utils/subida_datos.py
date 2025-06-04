@@ -33,14 +33,14 @@ class AddFechaSubidaDatos:
                 nuevas_razon_social.append(r)
             updates["historia.razon_social"] = nuevas_razon_social
 
-            #para actualizar actividades_economicas
-            actividades_economicas = doc.get("historia", {}.get("actividades_economicas", []))
-            nuevas_actuacion = []
+            # Actualiza actividades_economicas
+            actividades_economicas = doc.get("historia", {}).get("actividades_economicas", [])
+            nuevas_actividades = []
             for a in actividades_economicas:
-                if "fecha_subida_datos" not in a:
+                if isinstance(a, dict) and "fecha_subida_datos" not in a:
                     a["fecha_subida_datos"] = fecha_subida
-                    nuevas_actuacion.append(a)
-                updates["historia.actividades_economicas"] = nuevas_actuacion
+                nuevas_actividades.append(a)
+            updates["historia.actividades_economicas"] = nuevas_actividades
 
             # Actualiza actuacion
             actuacion = doc.get("historia", {}).get("actuacion", [])
