@@ -1,6 +1,6 @@
 from flask import Flask, Blueprint, jsonify, request, render_template
 from dotenv import load_dotenv
-from db import conexion_base_datos
+from db_destino import conexion_base_datos
 import requests
 import os
 import unicodedata
