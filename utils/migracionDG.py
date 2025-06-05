@@ -1,9 +1,6 @@
-# Script para migrar DatosGob
-
 from pymongo import MongoClient
 from datetime import datetime
 
-# Configuración
 conexion = MongoClient("mongodb://localhost:27018")
 db_origen = conexion["DatosEmpresas"]
 db_destino = conexion["DatosNormalizados"]

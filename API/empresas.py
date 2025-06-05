@@ -1,6 +1,7 @@
 from flask import Flask, Blueprint, jsonify, request, render_template
 from dotenv import load_dotenv
 from db import conexion_base_datos
+from db_origen import conexion_base_datos_origen
 import requests
 import os
 import unicodedata
@@ -8,6 +9,7 @@ import re
 import datetime
 
 db = conexion_base_datos().conexion() 
+db_origen = conexion_base_datos_origen().conexion()
 
 
 load_dotenv()  # Cargar las variables de entorno desde el archivo .env
@@ -64,9 +66,12 @@ def buscar_empresa():
 
     resultados = buscar_en_base_datos(valor)
 
+    revision = db_origen["revisiones"].find_one({"fuente": "datosgob"})
+    fecha_revision = revision["fecha_revision"] if revision else None
+
     if resultados:
-        return render_template("resultados.html", resultados=resultados)
-    return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
+        return render_template("resultados.html", resultados=resultados, fecha_revision=fecha_revision)
+    return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.",fecha_revision=fecha_revision)
 
 def buscar_en_base_datos(valor):
     resultados_totales = []

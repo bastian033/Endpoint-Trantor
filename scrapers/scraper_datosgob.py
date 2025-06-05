@@ -23,8 +23,8 @@ class ScraperDatosGob:
     def configuracion(self):
         options = Options()
         options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox") # para evitar errores
+        options.add_argument("--disable-dev-shm-usage") # para usar el disco para los datos temporales y no la memoria compartida 
         service = Service(ChromeDriverManager().install())
         return webdriver.Chrome(service=service, options=options)
 
@@ -35,8 +35,8 @@ class ScraperDatosGob:
             )
             filas = tabla.find_elements(By.TAG_NAME, "tr")
             for fila in filas:
-                ths = fila.find_elements(By.TAG_NAME, "th")
-                tds = fila.find_elements(By.TAG_NAME, "td")
+                ths = fila.find_elements(By.TAG_NAME, "th") # texto fecha datos
+                tds = fila.find_elements(By.TAG_NAME, "td") # fecha 
                 if ths and tds and "Última actualización de los datos" in ths[0].text:
                     fecha_texto = tds[0].text.strip()
                     patron = r"(\d{1,2}) de ([a-zA-Z]+) de (\d{4})"
@@ -53,7 +53,7 @@ class ScraperDatosGob:
                     return fecha_texto
             return None
         except Exception as e:
-            print(f"Error obteniendo fecha de actualización: {e}")
+            print(f"Error obteniendo fecha de actualizacion: {e}")
             return None
 
     def es_actualizacion_nueva(self, anio, fecha_actual):
@@ -162,7 +162,7 @@ class ScraperDatosGob:
                 enlace = li.find_element(By.TAG_NAME, "a")
                 url = enlace.get_attribute("href")
                 print(f"url del año encontrada: {url}")
-                # Extrae el año del texto o del enlace
+                #para extrae el año del texto o del enlace
                 anio_match = re.search(r"(\d{4})", enlace.text)
                 anio = int(anio_match.group(1)) if anio_match else None
                 if anio:
@@ -178,6 +178,17 @@ class ScraperDatosGob:
         finally:
             driver.quit()
 
+    def registrar_revision(fuente):
+        cliente = MongoClient("mongodb://localhost:27017/")
+        db = cliente["DatosEmpresas"]
+        db["revisiones"].update_one(
+            {"fuente": fuente},
+            {"$set": {"fecha_revision": datetime.now()}},
+            upsert=True
+        )
+        cliente.close()
+
 if __name__ == "__main__":
     scraper = ScraperDatosGob()
     scraper.busqueda()
+    scraper.registrar_revision("datosgob")

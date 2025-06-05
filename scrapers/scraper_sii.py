@@ -34,10 +34,9 @@ class SII_Scraper:
             for li in div_contenido.find_elements(By.TAG_NAME, "li"):
                 for url in li.find_elements(By.TAG_NAME, "a"):
                     enlaces = url.get_attribute("href")
-                    nombre_coleccion = url.text.strip()
                     respuesta = requests.get(enlaces)
 
-                    # Extraer la fecha de actualización
+                    # para extraer la fecha de actualizacion
                     fecha_actualizacion = None
                     for fecha in li.find_elements(By.CLASS_NAME, "fecha-actualizacion"):
                         fecha_texto = fecha.text.strip()
@@ -55,29 +54,13 @@ class SII_Scraper:
                                 fecha_actualizacion = datetime.date(anio, mes, 1)
                             break
 
-                    # Consultar si ya se procesó esta colección y fecha
-                    procesado = False
-                    if fecha_actualizacion:
-                        cliente = MongoClient("mongodb://localhost:27017/")
-                        db = cliente["DatosEmpresas"]
-                        registro = db["actualizaciones"].find_one({
-                            "coleccion": nombre_coleccion,
-                            "fecha": str(fecha_actualizacion)
-                        })
-                        cliente.close()
-                        if registro:
-                            print(f"Ya existe {nombre_coleccion} con fecha {fecha_actualizacion}, saltando descarga.")
-                            procesado = True
-
-                    if procesado:
-                        continue
-
                     if respuesta.status_code == 200:
-                        nomina = os.path.join(self.ruta_descarga, nombre_coleccion)
+                        # se usa el nombre del enlace para guardar el zip, pero el registro de actualización será por archivo extraido
+                        nombre_zip = url.text.strip().replace(" ", "_") + ".zip"
+                        nomina = os.path.join(self.ruta_descarga, nombre_zip)
                         with open(nomina, "wb") as archivo:
                             archivo.write(respuesta.content)
                         print(f"descargado: {nomina}")
-                        
 
                         ruta_extraida = os.path.join(self.ruta_descarga, "extraidos")
                         self.limpiar_carpeta(ruta_extraida)
@@ -86,19 +69,38 @@ class SII_Scraper:
                         for archivo in os.listdir(ruta_extraida):
                             if archivo.endswith(".txt"):
                                 ruta_txt = os.path.join(ruta_extraida, archivo)
+                                nombre_archivo = os.path.basename(ruta_txt)
+                                nombre_sin_extension = os.path.splitext(nombre_archivo)[0]
+
+                                # para consultar si ya se proceso este archivo y fecha
+                                procesado = False
+                                if fecha_actualizacion:
+                                    cliente = MongoClient("mongodb://localhost:27017/")
+                                    db = cliente["DatosEmpresas"]
+                                    registro = db["actualizaciones"].find_one({
+                                        "coleccion": nombre_sin_extension,
+                                        "fecha": str(fecha_actualizacion)
+                                    })
+                                    cliente.close()
+                                    if registro:
+                                        print(f"ya existe {nombre_sin_extension} con fecha {fecha_actualizacion}, se saltara la descarga")
+                                        procesado = True
+
+                                if procesado:
+                                    continue
+
                                 self.subir_txt_a_mongodb(ruta_txt, fuente_general)
 
-                        # Guardar registro de actualización procesada
-                        if fecha_actualizacion:
-                            cliente = MongoClient("mongodb://localhost:27017/")
-                            db = cliente["DatosEmpresas"]
-                            db["actualizaciones"].insert_one({
-                                "coleccion": nombre_coleccion,
-                                "fecha": str(fecha_actualizacion),
-                                "descargado": True,
-                                "timestamp": datetime.datetime.now()
-                            })
-                            cliente.close()
+                                if fecha_actualizacion:
+                                    cliente = MongoClient("mongodb://localhost:27017/")
+                                    db = cliente["DatosEmpresas"]
+                                    db["actualizaciones"].insert_one({
+                                        "coleccion": nombre_sin_extension,
+                                        "fecha": str(fecha_actualizacion),
+                                        "descargado": True,
+                                        "timestamp": datetime.datetime.now()
+                                    })
+                                    cliente.close()
 
         except Exception as e:
             print(f"Error: {e}")
@@ -153,6 +155,7 @@ class SII_Scraper:
                 if os.path.isfile(ruta_archivo):
                     os.remove(ruta_archivo)
                 elif os.path.isdir(ruta_archivo):
+                    #esto es para eliminar sub carpetas
                     shutil.rmtree(ruta_archivo)
 
     def obtener_nombres_colecciones(self):
@@ -166,6 +169,17 @@ class SII_Scraper:
         finally:
             cliente.close()
 
+    def registrar_revision(fuente):
+        cliente = MongoClient("mongodb://localhost:27017/")
+        db = cliente["DatosEmpresas"]
+        db["revisiones"].update_one(
+            {"fuente": fuente},
+            {"$set": {"fecha_revision": datetime.now()}},
+            upsert=True
+        )
+        cliente.close()
+
 if __name__ == "__main__":
     scraper = SII_Scraper()
     scraper.busqueda_y_descarga()
+    scraper.registrar_revision("SII")
