@@ -24,11 +24,11 @@ for doc in cursor:
     total += 1
     if len(batch) >= BATCH_SIZE:
         coleccion.bulk_write(batch)
-        print(f"{total} documentos actualizados...")
+        print(f"{total} documentos actualizados")
         batch = []
 
 if batch:
     coleccion.bulk_write(batch)
-    print(f"{total} documentos actualizados...")
+    print(f"{total} documentos actualizados")
 
 print("Proceso finalizado  total documentos procesados:", total)
