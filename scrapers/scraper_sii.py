@@ -10,7 +10,7 @@ import zipfile
 import os
 import sys
 import re
-import datetime
+from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.txt_to_json import transformar_txt_a_json
@@ -98,7 +98,7 @@ class SII_Scraper:
                                         "coleccion": nombre_sin_extension,
                                         "fecha": str(fecha_actualizacion),
                                         "descargado": True,
-                                        "timestamp": datetime.datetime.now()
+                                        "timestamp": datetime.now()
                                     })
                                     cliente.close()
 

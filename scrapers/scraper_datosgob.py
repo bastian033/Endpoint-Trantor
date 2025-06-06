@@ -10,7 +10,7 @@ import csv
 import sys
 import os
 import re
-import datetime
+from datetime import datetime
 from pymongo import MongoClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
