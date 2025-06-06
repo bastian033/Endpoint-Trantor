@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 import unicodedata
 import re
-import datetime
+
 
 db = conexion_base_datos().conexion() 
 db_origen = conexion_base_datos_origen().conexion()
