@@ -32,15 +32,15 @@
                         {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
                     </span>
                     <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
-                        {% if resultado.evaluado_trantor %}
-                            <span class="position-relative d-inline-block ms-2" style="background-color: greenyellow;">
-                                Evaluado positivamente por Trantor
-                                <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
-                                    alt="Badge Trantor"
-                                    class="position-absolute top-0 start-100 translate-middle"
-                                    style="height: 20px; width: 20px;" />
-                            </span>
-                        {% endif %}
+                    {% if resultado.evaluado_trantor %}
+                        <span class="position-relative d-inline-block ms-2 px-2 py-1 rounded" style="background-color: #eaffd0;">
+                            Evaluado positivamente por Trantor
+                            <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
+                                alt="Badge Trantor"
+                                class="position-absolute top-0 start-100 translate-middle ms-3"
+                                style="height: 20px; width: 20px;" />
+                        </span>
+                    {% endif %}
                 </button>
             </h2>
             <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
