@@ -32,6 +32,10 @@
                         {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
                     </span>
                     <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
+                    {% if resultado.evaluado_trantor %}
+                        <span class="badge bg-success ms-2">Evaluado positivamente por Trantor</span>
+                    {% endif %}
+                    <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
                 </button>
             </h2>
             <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">

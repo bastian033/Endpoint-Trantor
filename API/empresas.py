@@ -94,14 +94,27 @@ def buscar_en_base_datos(valor):
         return None
 
     try:
-        coleccion = db["empresas"]
-        resultados = list(coleccion.find(filtro).limit(10))  # Limitar resultados
-        print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
-        for resultado in resultados:
+        coleccion_empresas = db["empresas"]
+        coleccion_empresas_revisadas = db["EmpresasRevisadas"]
+        resultados_empresas = list(coleccion_empresas.find(filtro).limit(10))  # Limitar resultados
+        resultados_empresas_revisadas = list(coleccion_empresas_revisadas.find(filtro).limit(10))  # Limitar resultados
+        print(f"Buscando en empresas - encontrados: {len(resultados_empresas)}")
+        print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados_empresas_revisadas)}")
+
+        # para la coleccion de empresas
+        for resultado in resultados_empresas:
             resultado["_id"] = str(resultado["_id"])
             resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
+            resultado_normalizado["evaluado_trantor"] = False
             resultados_totales.append(resultado_normalizado)
 
+        # para la coleccion de EmpresasRevisadas
+        for resultado_r in resultados_empresas_revisadas:
+            resultado_r["_id"] = str(resultado_r["_id"])
+            resultado_normalizado = {key.lower(): value for key, value in resultado_r.items()}
+            resultado_normalizado["evaluado_trantor"] = True
+            resultados_totales.append(resultado_normalizado)
+    
         return resultados_totales
 
     except Exception as e:
