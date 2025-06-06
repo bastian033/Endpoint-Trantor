@@ -29,18 +29,22 @@
             <h2 class="accordion-header" id="heading{{ loop.index }}">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
                     <span class="fw-semibold">
-                        {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
+                        {% if resultado.evaluado_trantor %}
+                            {{ resultado.get('razon_social', 'N/A') }}
+                        {% else %}
+                            {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
+                        {% endif %}
                     </span>
                     <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
-                        {% if resultado.evaluado_trantor %}
-                            <span class="position-relative d-inline-block ms-2 px-2 py-1 rounded" style="background-color: #91e22d; color: white;">
-                                Evaluado positivamente por Trantor
-                                <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
-                                    alt="Badge Trantor"
-                                    class="position-absolute top-0 start-100 translate-middle"
-                                    style="height: 22px; width: 22px; margin-left: 1px;" />
-                            </span>
-                        {% endif %}
+                    {% if resultado.evaluado_trantor %}
+                        <span class="position-relative d-inline-block ms-2 px-2 py-1 rounded" style="background-color: #91e22d; color: white;">
+                            Evaluado positivamente por Trantor
+                            <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
+                                alt="Badge Trantor"
+                                class="position-absolute top-0 start-100 translate-middle"
+                                style="height: 22px; width: 22px; margin-left: 8px;" />
+                        </span>
+                    {% endif %}
                 </button>
             </h2>
             <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
@@ -49,20 +53,29 @@
                     <!-- Razón Social -->
                     <div class="section-title"><i class="fas fa-id-card"></i> Razón Social</div>
                     <ul class="list-group mb-2">
-                        {% for rs in resultado.get('historia', {}).get('razon_social', []) %}
-                        <li class="list-group-item">
-                            <strong>{{ rs.razon_social }}</strong>
-                            {% if rs.codigo_sociedad %} <span class="text-muted">({{ rs.codigo_sociedad }})</span>{% endif %}
-                            {% if rs.vigente %}<span class="badge bg-success ms-2">Vigente</span>{% endif %}
-                            {% if rs.fecha_actualizacion %}<span class="ms-2">Actualización: {{ rs.fecha_actualizacion }}</span>{% endif %}
-                            {% if rs.fecha_termino %}<span class="ms-2">Término: {{ rs.fecha_termino }}</span>{% endif %}
-                        </li>
-                        {% endfor %}
+                        {% if resultado.evaluado_trantor %}
+                            <li class="list-group-item">
+                                <strong>{{ resultado.get('razon_social', 'N/A') }}</strong>
+                            </li>
+                        {% else %}
+                            {% for rs in resultado.get('historia', {}).get('razon_social', []) %}
+                            <li class="list-group-item">
+                                <strong>{{ rs.razon_social }}</strong>
+                                {% if rs.codigo_sociedad %} <span class="text-muted">({{ rs.codigo_sociedad }})</span>{% endif %}
+                                {% if rs.vigente %}<span class="badge bg-success ms-2">Vigente</span>{% endif %}
+                                {% if rs.fecha_actualizacion %}<span class="ms-2">Actualización: {{ rs.fecha_actualizacion }}</span>{% endif %}
+                                {% if rs.fecha_termino %}<span class="ms-2">Término: {{ rs.fecha_termino }}</span>{% endif %}
+                            </li>
+                            {% endfor %}
+                        {% endif %}
                     </ul>
 
                     <!-- Direcciones -->
                     <div class="section-title"><i class="fas fa-map-marker-alt"></i> Direcciones</div>
                     <div class="table-responsive">
+                        {% if resultado.evaluado_trantor %}
+                            <div class="mb-2">No hay direcciones registradas para esta empresa.</div>
+                        {% else %}
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
@@ -85,11 +98,17 @@
                             {% endfor %}
                             </tbody>
                         </table>
+                        {% endif %}
                     </div>
 
                     <!-- Actividades Económicas -->
                     <div class="section-title"><i class="fas fa-industry"></i> Actividades Económicas</div>
                     <div class="table-responsive">
+                        {% if resultado.evaluado_trantor %}
+                            <div class="mb-2">
+                                <strong>Giro:</strong> {{ resultado.get('data', {}).get('giro', 'N/A') }}
+                            </div>
+                        {% else %}
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
@@ -112,9 +131,11 @@
                             {% endfor %}
                             </tbody>
                         </table>
+                        {% endif %}
                     </div>
 
                     <!-- Actuaciones -->
+                    {% if not resultado.evaluado_trantor %}
                     <div class="section-title"><i class="fas fa-gavel"></i> Actuaciones</div>
                     <ul class="list-group mb-2">
                         {% for act in resultado.get('historia', {}).get('actuacion', []) %}
@@ -126,14 +147,17 @@
                         </li>
                         {% endfor %}
                     </ul>
+                    {% endif %}
 
                     <!-- Años Comerciales -->
+                    {% if not resultado.evaluado_trantor %}
                     <div class="section-title"><i class="fas fa-calendar-alt"></i> Años Comerciales</div>
                     <div>
                         {% for ac in resultado.get('años_comerciales', []) %}
                         <span class="badge badge-ac">{{ ac.año }}</span>
                         {% endfor %}
                     </div>
+                    {% endif %}
 
                     <!-- Tags -->
                     <div class="section-title"><i class="fas fa-tags"></i> Tags</div>
