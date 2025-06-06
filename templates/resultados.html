@@ -33,7 +33,7 @@
                     </span>
                     <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
                         {% if resultado.evaluado_trantor %}
-                            <span class="position-relative d-inline-block ms-2">
+                            <span class="position-relative d-inline-block ms-2" style="background-color: greenyellow;">
                                 Evaluado positivamente por Trantor
                                 <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
                                     alt="Badge Trantor"
