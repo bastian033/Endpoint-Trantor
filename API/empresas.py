@@ -142,8 +142,14 @@ def subir_info_empresa():
     for campo in ["rut", "razon_social", "guardar_rutificador", "data"]:
         if campo not in datos:
             campos_faltantes.append(campo)
-        elif campo != "guardar_rutificador" and not datos[campo]:
-            campos_faltantes.append(campo)
+        elif campo == "guardar_rutificador":
+            if not isinstance(datos[campo], bool):
+                campos_faltantes.append(campo)
+        elif not datos[campo]:
+            campos_faltantes.append(campo) 
+        #     campos_faltantes.append(campo)
+        # elif campo != "guardar_rutificador" and not datos[campo]:
+        #     campos_faltantes.append(campo)
     if campos_faltantes:
         return jsonify({"codigo": 400 ,
                         "estado": "Error, sintaxis incorrecta o datos invalidos",
