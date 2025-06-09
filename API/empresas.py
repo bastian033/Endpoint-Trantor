@@ -168,7 +168,7 @@ def subir_info_empresa():
             ):
             return jsonify({"codigo": 422,
                 "estado": "Error en la semantica",
-                "mensaje": f"El campo '{clave}' en data no puede estar vacío"}), 422
+                "mensaje": f"El campo '{clave}' en data no puede estar vacio"}), 422
 
     # para normalizar el rut
     rut = datos["rut"].replace(".", "").replace(" ", "").strip()
@@ -210,7 +210,7 @@ def subir_info_empresa():
     try:
         if datos["guardar_rutificador"]:
             coleccion.insert_one(doc)
-            mensaje = "La información fue guardada exitosamente"
+            mensaje = "La informacion fue guardada exitosamente"
         else:
             mensaje = "La informacion fue recibida exitosamente pero no se guardo en la base de datos"
     except Exception as e:
