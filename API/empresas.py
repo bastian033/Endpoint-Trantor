@@ -160,6 +160,15 @@ def subir_info_empresa():
         return jsonify({"codigo": 422 ,
                         "estado": "Error en la semantica", 
                         "mensaje":f"Se necesita minimo una clave en el campo data: {','.join(datos['data'].keys())}"}), 422
+    
+    # para validar que ninguna clave de dara venga vacia
+    for clave, valor in datos["data"].items():
+        if (valor in ("", None, []) or
+            (isinstance(valor, str) and not valor.strip())
+            ):
+            return jsonify({"codigo": 422,
+                "estado": "Error en la semantica",
+                "mensaje": f"El campo '{clave}' en data no puede estar vacío"}), 422
 
     # para normalizar el rut
     rut = datos["rut"].replace(".", "").replace(" ", "").strip()
