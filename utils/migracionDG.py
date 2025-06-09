@@ -112,4 +112,4 @@ for nombre_coleccion in colecciones:
     if operaciones:
         db_destino.empresas.bulk_write(operaciones)
 
-print("Migración completada")
+print("Migracion completada")

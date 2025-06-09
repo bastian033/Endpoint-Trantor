@@ -210,7 +210,7 @@ for empresa in empresas_por_rut.values():
     empresa["historia"]["actividades_economicas"] = actividades_final
     empresa["años_comerciales"] = [{"año": a, "origen": "SII"} for a in sorted(empresa["años_comerciales"])]
 
-    # --- DEDUPLICACIÓN DE RAZONES SOCIALES ---
+    # --- DEDUPLICACION DE RAZONES SOCIALES ---
     razones = empresa["historia"]["razon_social"]
     grupos_rs = {}
     for d in razones:
@@ -218,7 +218,7 @@ for empresa in empresas_por_rut.values():
         if clave not in grupos_rs:
             grupos_rs[clave] = d
         else:
-            # Si hay duplicados, elige el más reciente por fecha_actualizacion
+            # Si hay duplicados, elige el mas reciente por fecha_actualizacion
             fecha_existente = normalizar_fecha(grupos_rs[clave].get("fecha_actualizacion"))
             fecha_nueva = normalizar_fecha(d.get("fecha_actualizacion"))
             if fecha_nueva and (not fecha_existente or fecha_nueva > fecha_existente):

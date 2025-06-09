@@ -11,17 +11,27 @@ def ejecutar(nombre, comando):
 
 if __name__ == "__main__":
 
-    # Primero para los datos de DatosGob
-
+    # PARA DATOSGOB
     ejecutar("Scraper DatosGob", ["python", "scrapers/scraper_datosgob.py"])
 
     ejecutar("Migracion DatosGob", ["python", "utils/migracionDG.py"])
     
-    # Ahora para los datos de SII
-
+#-----------------------------------------------------------------------------
+    # PARA SII
     ejecutar("Migracion SII", ["python", "scrapers/scraper_sii.py"])
 
     ejecutar("Migracion SII", ["python", "utils/migracionSII.py"])
- 
+
+    # para las razones sociales
+    ejecutar("Duplicados RS", ["python", "utils/duplicados_RS.py"])
+
+    # para las actividades económicas
+    ejecutar("duplicados actividades_economicas", ["python", "utils/duplicados_AE.py"])
+
+    # para las direcciones
+    ejecutar("Duplicados Direcciones", ["python", "utils/migracion_direcciones.py"])
+
+    # para rellenar el campo tags2
+    ejecutar("Rellenar tags2", ["python", "utils/tags2.py"])
     
     print("Orquestador DatosGob: Proceso completo.")
