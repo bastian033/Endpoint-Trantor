@@ -178,13 +178,6 @@ def subir_info_empresa():
         return jsonify({"codigo": 400 ,
                         "estado": "Error, sintaxis incorrecta o datos invalidos",
                         "mensaje":"El formato del RUT es incorrecto."}), 400
-
-    # para validar el formato de guardar_rutificador
-    # if not isinstance(datos["guardar_rutificador"], bool):
-    #     return jsonify({"codigo":400, 
-    #                     "estado": "Sintaxis incorrecta o datos invalidos",
-    #                     "mensaje": "El campo 'guardar_rutificador' debe ser un booleano"
-    #                     }), 400
     
     # para validar el token 
     token_recibido = request.headers.get("X-TOKEN")
@@ -192,6 +185,12 @@ def subir_info_empresa():
         return jsonify({"codigo":401,
                         "estado": "No autorizado",
                         "mensaje": "Token invalido o no enviado"}), 401
+    
+    rut_empresa_revisada = db["EmpresasRevisadas"].find_one({"rut": rut})
+    if rut_empresa_revisada:
+        return jsonify({"codigo": 409,
+                        "estado": "Conflicto",
+                        "mensaje": f"Ya existe una empresa con el RUT {rut} en la base de datos"}), 409
     
     # Buscar datos previos en la colección empresas
     empresa = db["empresas"].find_one({"rut": rut})
