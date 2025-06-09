@@ -171,11 +171,11 @@ def subir_info_empresa():
                         "mensaje":"El formato del RUT es incorrecto."}), 400
 
     # para validar el formato de guardar_rutificador
-    if not isinstance(datos["guardar_rutificador"], bool):
-        return jsonify({"codigo":400, 
-                        "estado": "Sintaxis incorrecta o datos invalidos",
-                        "mensaje": "El campo 'guardar_rutificador' debe ser un booleano"
-                        }), 400
+    # if not isinstance(datos["guardar_rutificador"], bool):
+    #     return jsonify({"codigo":400, 
+    #                     "estado": "Sintaxis incorrecta o datos invalidos",
+    #                     "mensaje": "El campo 'guardar_rutificador' debe ser un booleano"
+    #                     }), 400
     
     # para validar el token 
     token_recibido = request.headers.get("X-TOKEN")
