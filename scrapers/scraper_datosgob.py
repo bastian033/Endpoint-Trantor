@@ -10,7 +10,7 @@ import csv
 import sys
 import os
 import re
-from datetime import datetime
+from datetime import datetime, date
 from pymongo import MongoClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -49,7 +49,7 @@ class ScraperDatosGob:
                         }
                         mes = meses.get(mes_str.lower())
                         if mes:
-                            return datetime.date(int(anio), mes, int(dia))
+                            return date(int(anio), mes, int(dia))
                     return fecha_texto
             return None
         except Exception as e:
@@ -58,20 +58,35 @@ class ScraperDatosGob:
 
     def es_actualizacion_nueva(self, anio, fecha_actual):
         cliente = self.conexion_db.client
-        db = cliente["DatosGob"]
+        db = cliente["DatosEmpresas"]
         registro = db["actualizaciones"].find_one({"fuente": "datosgob", "anio": anio})
         if registro and "fecha" in registro:
-            return str(fecha_actual) > registro["fecha"]
+            try:
+                # Convierte ambas fechas a objetos date
+                fecha_guardada = datetime.strptime(registro["fecha"], "%Y-%m-%d").date()
+                if isinstance(fecha_actual, str):
+                    # Si por alguna razón fecha_actual es string, intenta convertirla
+                    fecha_actual_dt = datetime.strptime(fecha_actual, "%Y-%m-%d").date()
+                else:
+                    fecha_actual_dt = fecha_actual
+                print(f"Comparando fecha actual: {fecha_actual_dt} con fecha en registro: {fecha_guardada}")
+                return fecha_actual_dt > fecha_guardada
+            except Exception as e:
+                print(f"Error comparando fechas: {e}")
+                return True
         return True
 
     def guardar_fecha_actualizacion(self, anio, fecha_actual):
         cliente = self.conexion_db.client
-        db = cliente["DatosGob"]
+        db = cliente["DatosEmpresas"]
         db["actualizaciones"].update_one(
             {"fuente": "datosgob", "anio": anio},
-            {"$set": {"fecha": str(fecha_actual), "timestamp": datetime.datetime.now()}},
+            {"$set": {
+                "fecha": fecha_actual.strftime("%Y-%m-%d") if isinstance(fecha_actual, date) else str(fecha_actual),
+                "timestamp": datetime.now()
+            }},
             upsert=True
-        )
+    )
 
     def subir_a_mongodb(self, ruta_archivo, tamaño_lote=1000):
         try:
@@ -82,7 +97,7 @@ class ScraperDatosGob:
             coleccion = self.conexion_db[f"DatosGob{anio}"]
 
             with open(ruta_archivo, newline='', encoding='utf-8') as csvfile:
-                lector = csv.DictReader(csvfile)
+                lector = csv.DictReader(csvfile, delimiter=';')
                 lote = []
                 total = 0
                 for doc in lector:
@@ -178,7 +193,7 @@ class ScraperDatosGob:
         finally:
             driver.quit()
 
-    def registrar_revision(fuente):
+    def registrar_revision(self, fuente):
         cliente = MongoClient("mongodb://localhost:27017/")
         db = cliente["DatosEmpresas"]
         db["revisiones"].update_one(
