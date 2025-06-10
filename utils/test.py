@@ -11,7 +11,7 @@ options.add_argument("--disable-dev-shm-usage")
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-driver.get("https://example.com")
+driver.get("https://datos.gob.cl/dataset/registro-de-empresas-y-sociedades/resource/fd2b91b0-eb8e-45f1-98d0-1f3316bb6468")
 print(driver.title)
 print(driver.page_source)
 driver.quit()
