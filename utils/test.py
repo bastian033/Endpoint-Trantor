@@ -13,4 +13,5 @@ driver = webdriver.Chrome(service=service, options=options)
 
 driver.get("https://www.google.com")
 print(driver.title)
+print(driver.page_source)
 driver.quit()
