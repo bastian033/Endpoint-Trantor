@@ -154,7 +154,7 @@ class ScraperDatosGob:
                 ruta_csv = self.descargar_csv(enlace_csv)
                 if ruta_csv:
                     self.guardar_fecha_actualizacion(anio, fecha_actual)
-                    return anio  # <-- Retorna el año actualizado
+                return ruta_csv
             else:
                 print(f"No hay actualización nueva de datos para el año {anio}.")
                 return None
@@ -172,18 +172,19 @@ class ScraperDatosGob:
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".list-unstyled.nav.nav-simple"))
             )
 
-            anios_actualizados = []
+            urls_csv = []
             for li in elemento_ul.find_elements(By.TAG_NAME, "li"):
                 enlace = li.find_element(By.TAG_NAME, "a")
                 url = enlace.get_attribute("href")
                 print(f"url del año encontrada: {url}")
+                #para extrae el año del texto o del enlace
                 anio_match = re.search(r"(\d{4})", enlace.text)
                 anio = int(anio_match.group(1)) if anio_match else None
                 if anio:
-                    actualizado = self.navegacion(url, anio)
-                    if actualizado:
-                        anios_actualizados.append(actualizado)
-            return anios_actualizados
+                    csv_url = self.navegacion(url, anio)
+                    if csv_url:
+                        urls_csv.append(csv_url)
+            return urls_csv
 
         except Exception as e:
             print(f"Error al buscar los enlaces de años: {e}")
