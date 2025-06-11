@@ -1,5 +1,24 @@
+import sys
 from pymongo import MongoClient, InsertOne
 from datetime import datetime
+
+COLECCIONES_SII = [
+    "PUB_NOM_SUCURSAL",
+    "PUB_NOM_DOMICILIO",
+    "PUB_NOM_ACTECOS",
+    "PUB_NOMBRES_PJ",
+    "Nómina_de_empresas_personas_jurídicas_año_comercial_20202023",
+    "Nómina_de_empresas_personas_jurídicas_año_comercial_20152019",
+    "Nómina_de_empresas_personas_jurídicas_año_comercial_20102014",
+    "Nómina_de_empresas_personas_jurídicas_año_comercial_20052009"
+]
+
+# Si se pasan colecciones por argumento, usa esas; si no, usa todas por defecto
+if len(sys.argv) > 2 and sys.argv[1] == "--colecciones":
+    colecciones_especificas = sys.argv[2].split(",")
+else:
+    colecciones_especificas = COLECCIONES_SII
+
 
 def norm(x):
     v = str(x or "").strip().upper()

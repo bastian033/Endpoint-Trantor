@@ -24,10 +24,20 @@ if __name__ == "__main__":
     else:
         print("No hay años actualizados en DatosGob, omitiendo migración.")
 
-#-----------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------
     # PARA SII
-    ejecutar("Migracion SII", ["python", "scrapers/scraper_sii.py"])
-    ejecutar("Migracion SII", ["python", "utils/migracionSII.py"])
+    from scrapers.scraper_sii import SII_Scraper
+
+    scraper_sii = SII_Scraper()
+    colecciones_actualizadas = scraper_sii.busqueda_y_descarga()  # Debe retornar lista de colecciones actualizadas
+
+    if colecciones_actualizadas:
+        colecciones_str = ",".join(colecciones_actualizadas)
+        ejecutar("Migracion SII", ["python", "utils/migracionSII.py", "--colecciones", colecciones_str])
+    else:
+        print("No hay colecciones actualizadas en SII, omitiendo migración.")
+
+    scraper_sii.registrar_revision("SII")
 
     # para las razones sociales
     ejecutar("Duplicados RS", ["python", "utils/duplicados_RS.py"])

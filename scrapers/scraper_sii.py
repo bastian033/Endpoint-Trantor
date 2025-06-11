@@ -11,7 +11,7 @@ import shutil
 import requests
 import zipfile
 import re
-from datetime import datetime
+from datetime import datetime, date
 
 from utils.txt_to_json import transformar_txt_a_json
 
@@ -25,6 +25,8 @@ class SII_Scraper:
         driver = scraper.configurar_driver()
         driver.get("https://www.sii.cl/sobre_el_sii/nominapersonasjuridicas.html")
         fuente_general = "https://www.sii.cl/sobre_el_sii/nominapersonasjuridicas.html"
+
+        colecciones_actualizadas = []
 
         try:
             div_contenido = WebDriverWait(driver, 15).until(
@@ -51,11 +53,10 @@ class SII_Scraper:
                             mes = meses.get(mes_str.lower())
                             anio = int(anio_str)
                             if mes:
-                                fecha_actualizacion = datetime.date(anio, mes, 1)
+                                fecha_actualizacion = date(anio, mes, 1)
                             break
 
                     if respuesta.status_code == 200:
-                        # se usa el nombre del enlace para guardar el zip, pero el registro de actualización será por archivo extraido
                         nombre_zip = url.text.strip().replace(" ", "_") + ".zip"
                         nomina = os.path.join(self.ruta_descarga, nombre_zip)
                         with open(nomina, "wb") as archivo:
@@ -90,6 +91,7 @@ class SII_Scraper:
                                     continue
 
                                 self.subir_txt_a_mongodb(ruta_txt, fuente_general)
+                                colecciones_actualizadas.append(nombre_sin_extension)  # <-- Agrega a la lista
 
                                 if fecha_actualizacion:
                                     cliente = MongoClient("mongodb://localhost:27017/")
@@ -107,6 +109,8 @@ class SII_Scraper:
 
         finally:
             driver.quit()
+
+        return colecciones_actualizadas
 
     def extraer_zip(self, nomina, ruta_destino):
         try:
@@ -169,7 +173,7 @@ class SII_Scraper:
         finally:
             cliente.close()
 
-    def registrar_revision(fuente):
+    def registrar_revision(self, fuente):
         cliente = MongoClient("mongodb://localhost:27017/")
         db = cliente["DatosEmpresas"]
         db["revisiones"].update_one(
@@ -181,5 +185,7 @@ class SII_Scraper:
 
 if __name__ == "__main__":
     scraper = SII_Scraper()
-    scraper.busqueda_y_descarga()
+    colecciones_actualizadas = scraper.busqueda_y_descarga()
+    if colecciones_actualizadas:
+        print("Colecciones actualizadas:", colecciones_actualizadas)
     scraper.registrar_revision("SII")
