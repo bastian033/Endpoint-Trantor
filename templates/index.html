@@ -82,6 +82,19 @@
           btnBuscar.innerText = 'Buscando...'; 
         });
       });
+
+        window.addEventListener('pageshow', function(event) {
+        // Restaurar el estado inicial del botón y captcha al volver atrás
+        const btnBuscar = document.getElementById('btnBuscar');
+        if (btnBuscar) {
+          btnBuscar.disabled = true;
+          btnBuscar.innerText = 'Buscar';
+        }
+        // Si usas Turnstile, puedes resetearlo así:
+        if (window.turnstile && document.querySelector('.cf-turnstile')) {
+          turnstile.reset();
+        }
+      });
     </script>
 
 </body>
