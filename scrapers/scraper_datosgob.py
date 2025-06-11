@@ -10,7 +10,7 @@ import csv
 import sys
 import os
 import re
-import datetime
+from datetime import datetime, date
 from pymongo import MongoClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -23,8 +23,8 @@ class ScraperDatosGob:
     def configuracion(self):
         options = Options()
         options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox") # para evitar errores
+        options.add_argument("--disable-dev-shm-usage") # para usar el disco para los datos temporales y no la memoria compartida 
         service = Service(ChromeDriverManager().install())
         return webdriver.Chrome(service=service, options=options)
 
@@ -35,8 +35,8 @@ class ScraperDatosGob:
             )
             filas = tabla.find_elements(By.TAG_NAME, "tr")
             for fila in filas:
-                ths = fila.find_elements(By.TAG_NAME, "th")
-                tds = fila.find_elements(By.TAG_NAME, "td")
+                ths = fila.find_elements(By.TAG_NAME, "th") # texto fecha datos
+                tds = fila.find_elements(By.TAG_NAME, "td") # fecha 
                 if ths and tds and "Última actualización de los datos" in ths[0].text:
                     fecha_texto = tds[0].text.strip()
                     patron = r"(\d{1,2}) de ([a-zA-Z]+) de (\d{4})"
@@ -49,29 +49,44 @@ class ScraperDatosGob:
                         }
                         mes = meses.get(mes_str.lower())
                         if mes:
-                            return datetime.date(int(anio), mes, int(dia))
+                            return date(int(anio), mes, int(dia))
                     return fecha_texto
             return None
         except Exception as e:
-            print(f"Error obteniendo fecha de actualización: {e}")
+            print(f"Error obteniendo fecha de actualizacion: {e}")
             return None
 
     def es_actualizacion_nueva(self, anio, fecha_actual):
         cliente = self.conexion_db.client
-        db = cliente["DatosGob"]
+        db = cliente["DatosEmpresas"]
         registro = db["actualizaciones"].find_one({"fuente": "datosgob", "anio": anio})
         if registro and "fecha" in registro:
-            return str(fecha_actual) > registro["fecha"]
+            try:
+                # Convierte ambas fechas a objetos date
+                fecha_guardada = datetime.strptime(registro["fecha"], "%Y-%m-%d").date()
+                if isinstance(fecha_actual, str):
+                    # Si por alguna razón fecha_actual es string, intenta convertirla
+                    fecha_actual_dt = datetime.strptime(fecha_actual, "%Y-%m-%d").date()
+                else:
+                    fecha_actual_dt = fecha_actual
+                print(f"Comparando fecha actual: {fecha_actual_dt} con fecha en registro: {fecha_guardada}")
+                return fecha_actual_dt > fecha_guardada
+            except Exception as e:
+                print(f"Error comparando fechas: {e}")
+                return True
         return True
 
     def guardar_fecha_actualizacion(self, anio, fecha_actual):
         cliente = self.conexion_db.client
-        db = cliente["DatosGob"]
+        db = cliente["DatosEmpresas"]
         db["actualizaciones"].update_one(
             {"fuente": "datosgob", "anio": anio},
-            {"$set": {"fecha": str(fecha_actual), "timestamp": datetime.datetime.now()}},
+            {"$set": {
+                "fecha": fecha_actual.strftime("%Y-%m-%d") if isinstance(fecha_actual, date) else str(fecha_actual),
+                "timestamp": datetime.now()
+            }},
             upsert=True
-        )
+    )
 
     def subir_a_mongodb(self, ruta_archivo, tamaño_lote=1000):
         try:
@@ -82,7 +97,7 @@ class ScraperDatosGob:
             coleccion = self.conexion_db[f"DatosGob{anio}"]
 
             with open(ruta_archivo, newline='', encoding='utf-8') as csvfile:
-                lector = csv.DictReader(csvfile)
+                lector = csv.DictReader(csvfile, delimiter=';')
                 lote = []
                 total = 0
                 for doc in lector:
@@ -162,7 +177,7 @@ class ScraperDatosGob:
                 enlace = li.find_element(By.TAG_NAME, "a")
                 url = enlace.get_attribute("href")
                 print(f"url del año encontrada: {url}")
-                # Extrae el año del texto o del enlace
+                #para extrae el año del texto o del enlace
                 anio_match = re.search(r"(\d{4})", enlace.text)
                 anio = int(anio_match.group(1)) if anio_match else None
                 if anio:
@@ -178,6 +193,17 @@ class ScraperDatosGob:
         finally:
             driver.quit()
 
+    def registrar_revision(self, fuente):
+        cliente = MongoClient("mongodb://localhost:27017/")
+        db = cliente["DatosEmpresas"]
+        db["revisiones"].update_one(
+            {"fuente": fuente},
+            {"$set": {"fecha_revision": datetime.now()}},
+            upsert=True
+        )
+        cliente.close()
+
 if __name__ == "__main__":
     scraper = ScraperDatosGob()
     scraper.busqueda()
+    scraper.registrar_revision("datosgob")

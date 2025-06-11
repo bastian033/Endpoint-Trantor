@@ -40,4 +40,4 @@ for nombre_col in colecciones_especificas:
     col.create_index("rut_unificado")
     print(f"Índice creado en 'rut_unificado' para {nombre_col}")
 
-print("Campo 'rut_unificado' creado y indexado en todas las colecciones.")
+print("Campo 'rut_unificado' creado y indexado en todas las colecciones")

@@ -13,7 +13,15 @@
 </head>
 <body>
 <div class="container py-4">
-    <h1 class="text-center mb-4 text-primary fw-bold">Resultados de Empresas</h1>
+    <h1 class="text-center mb-4 text-primary fw-bold">Resultados</h1>
+    {% if fecha_revision %}
+        <div class="text-center mb-3">
+            <span class="badge bg-info text-dark">
+                Última revisión de datos: 
+                {{ fecha_revision.strftime('%d/%m/%Y %H:%M') if fecha_revision else 'No disponible' }}
+            </span>
+        </div>
+    {% endif %}
     {% if resultados %}
     <div class="accordion" id="empresasAccordion">
         {% for resultado in resultados %}
@@ -21,9 +29,22 @@
             <h2 class="accordion-header" id="heading{{ loop.index }}">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
                     <span class="fw-semibold">
-                        {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'N/A')}])[0]['razon_social'] }}
+                        {% if resultado.evaluado_trantor %}
+                            {{ resultado.get('razon_social')|mostrar_valor }}
+                        {% else %}
+                            {{ resultado.get('historia', {}).get('razon_social', [{'razon_social': resultado.get('razon social', 'No disponible')}])[0]['razon_social']|mostrar_valor }}
+                        {% endif %}
                     </span>
-                    <span class="badge bg-secondary ms-2">{{ resultado.get('rut', 'N/A') }}</span>
+                    <span class="badge bg-secondary ms-2">{{ resultado.get('rut')|mostrar_valor }}</span>
+                    {% if resultado.evaluado_trantor %}
+                        <span class="position-relative d-inline-block ms-2 px-2 py-1 rounded" style="background-color: #91e22d; color: white;">
+                            Evaluado positivamente por Trantor
+                            <img src="{{ url_for('static', filename='media/trantor_badge.svg') }}"
+                                alt="Badge Trantor"
+                                class="position-absolute top-0 start-100 translate-middle"
+                                style="height: 22px; width: 22px; margin-left: 2px;" />
+                        </span>
+                    {% endif %}
                 </button>
             </h2>
             <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#empresasAccordion">
@@ -32,20 +53,29 @@
                     <!-- Razón Social -->
                     <div class="section-title"><i class="fas fa-id-card"></i> Razón Social</div>
                     <ul class="list-group mb-2">
-                        {% for rs in resultado.get('historia', {}).get('razon_social', []) %}
-                        <li class="list-group-item">
-                            <strong>{{ rs.razon_social }}</strong>
-                            {% if rs.codigo_sociedad %} <span class="text-muted">({{ rs.codigo_sociedad }})</span>{% endif %}
-                            {% if rs.vigente %}<span class="badge bg-success ms-2">Vigente</span>{% endif %}
-                            {% if rs.fecha_actualizacion %}<span class="ms-2">Actualización: {{ rs.fecha_actualizacion }}</span>{% endif %}
-                            {% if rs.fecha_termino %}<span class="ms-2">Término: {{ rs.fecha_termino }}</span>{% endif %}
-                        </li>
-                        {% endfor %}
+                        {% if resultado.evaluado_trantor %}
+                            <li class="list-group-item">
+                                <strong>{{ resultado.get('razon_social')|mostrar_valor }}</strong>
+                            </li>
+                        {% else %}
+                            {% for rs in resultado.get('historia', {}).get('razon_social', []) %}
+                            <li class="list-group-item">
+                                <strong>{{ rs.razon_social|mostrar_valor }}</strong>
+                                {% if rs.codigo_sociedad and rs.codigo_sociedad|mostrar_valor != 'No disponible' %} <span class="text-muted">({{ rs.codigo_sociedad|mostrar_valor }})</span>{% endif %}
+                                {% if rs.vigente %}<span class="badge bg-success ms-2">Vigente</span>{% endif %}
+                                {% if rs.fecha_actualizacion and rs.fecha_actualizacion|mostrar_valor != 'No disponible' %}<span class="ms-2">Actualización: {{ rs.fecha_actualizacion|mostrar_valor }}</span>{% endif %}
+                                {% if rs.fecha_termino and rs.fecha_termino|mostrar_valor != 'No disponible' %}<span class="ms-2">Término: {{ rs.fecha_termino|mostrar_valor }}</span>{% endif %}
+                            </li>
+                            {% endfor %}
+                        {% endif %}
                     </ul>
 
                     <!-- Direcciones -->
                     <div class="section-title"><i class="fas fa-map-marker-alt"></i> Direcciones</div>
                     <div class="table-responsive">
+                        {% if resultado.evaluado_trantor %}
+                            <div class="mb-2">No hay direcciones registradas para esta empresa.</div>
+                        {% else %}
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
@@ -55,24 +85,30 @@
                             <tbody>
                             {% for d in resultado.get('historia', {}).get('direcciones', []) %}
                                 <tr>
-                                    <td>{{ d.tipo_direccion }}</td>
-                                    <td>{{ d.calle }}</td>
-                                    <td>{{ d.numero }}</td>
-                                    <td>{{ d.departamento }}</td>
-                                    <td>{{ d.ciudad }}</td>
-                                    <td>{{ d.comuna }}</td>
-                                    <td>{{ d.region }}</td>
+                                    <td>{{ d.tipo_direccion|mostrar_valor }}</td>
+                                    <td>{{ d.calle|mostrar_valor }}</td>
+                                    <td>{{ d.numero|mostrar_valor }}</td>
+                                    <td>{{ d.departamento|mostrar_valor }}</td>
+                                    <td>{{ d.ciudad|mostrar_valor }}</td>
+                                    <td>{{ d.comuna|mostrar_valor }}</td>
+                                    <td>{{ d.region|mostrar_valor }}</td>
                                     <td>{% if d.vigente %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
-                                    <td>{{ d.fecha_actualizacion }}</td>
+                                    <td>{{ d.fecha_actualizacion|mostrar_valor }}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
                         </table>
+                        {% endif %}
                     </div>
 
                     <!-- Actividades Económicas -->
                     <div class="section-title"><i class="fas fa-industry"></i> Actividades Económicas</div>
                     <div class="table-responsive">
+                        {% if resultado.evaluado_trantor %}
+                            <div class="mb-2">
+                                <strong>Giro:</strong> {{ resultado.get('data', {}).get('giro')|mostrar_valor }}
+                            </div>
+                        {% else %}
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
@@ -82,56 +118,60 @@
                             <tbody>
                             {% for ae in resultado.get('historia', {}).get('actividades_economicas', []) %}
                                 <tr>
-                                    <td>{{ ae.actividad }}</td>
-                                    <td>{{ ae.rubro }}</td>
-                                    <td>{{ ae.subrubro }}</td>
-                                    <td>{{ ae.comuna }}</td>
-                                    <td>{{ ae.region }}</td>
-                                    <td>{{ ae.fecha_inicio_actividades }}</td>
-                                    <td>{{ ae.fecha_termino_actividades }}</td>
+                                    <td>{{ ae.actividad|mostrar_valor }}</td>
+                                    <td>{{ ae.rubro|mostrar_valor }}</td>
+                                    <td>{{ ae.subrubro|mostrar_valor }}</td>
+                                    <td>{{ ae.comuna|mostrar_valor }}</td>
+                                    <td>{{ ae.region|mostrar_valor }}</td>
+                                    <td>{{ ae.fecha_inicio_actividades|mostrar_valor }}</td>
+                                    <td>{{ ae.fecha_termino_actividades|mostrar_valor }}</td>
                                     <td>{% if ae.vigente %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
-                                    <td>{% if ae.principal %}<span class="badge bg-primary">Principal</span>{% endif %}</td>
+                                    <td>{% if ae.principal %}<span class="badge bg-primary">Principal</span>{% else %}—{% endif %}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
                         </table>
+                        {% endif %}
                     </div>
 
                     <!-- Actuaciones -->
+                    {% if not resultado.evaluado_trantor %}
                     <div class="section-title"><i class="fas fa-gavel"></i> Actuaciones</div>
                     <ul class="list-group mb-2">
                         {% for act in resultado.get('historia', {}).get('actuacion', []) %}
                         <li class="list-group-item">
-                            <strong>Tipo:</strong> {{ act.tipo_actuacion or 'N/A' }},
-                            <strong>Fecha aprobación SII:</strong> {{ act.fecha_aprobacion_SII or 'N/A' }},
-                            <strong>Descripción:</strong> {{ act.descripcion or 'N/A' }},
-                            <strong>Origen:</strong> {{ act.origen or 'N/A' }}
+                            <strong>Tipo:</strong> {{ act.tipo_actuacion|mostrar_valor }},
+                            <strong>Fecha aprobación SII:</strong> {{ act.fecha_aprobacion_SII|mostrar_valor }},
+                            <strong>Descripción:</strong> {{ act.descripcion|mostrar_valor }},
+                            <strong>Origen:</strong> {{ act.origen|mostrar_valor }}
                         </li>
                         {% endfor %}
                     </ul>
+                    {% endif %}
 
                     <!-- Años Comerciales -->
+                    {% if not resultado.evaluado_trantor %}
                     <div class="section-title"><i class="fas fa-calendar-alt"></i> Años Comerciales</div>
                     <div>
                         {% for ac in resultado.get('años_comerciales', []) %}
-                        <span class="badge badge-ac">{{ ac.año }}</span>
+                        <span class="badge badge-ac">{{ ac.año|mostrar_valor }}</span>
                         {% endfor %}
                     </div>
+                    {% endif %}
 
                     <!-- Tags -->
                     <div class="section-title"><i class="fas fa-tags"></i> Tags</div>
                     <div>
-                        {% for tag in resultado.get('tags', []) %}
-                        <span class="badge bg-info text-dark">{{ tag }}</span>
-                        {% endfor %}
                         {% if resultado.get('tags2') %}
-                        <span class="badge bg-info text-dark">{{ resultado.get('tags2') }}</span>
+                        <span class="badge bg-info text-dark">{{ resultado.get('tags2')|mostrar_valor }}</span>
+                        {% else %}
+                        <span class="badge bg-info text-dark">No disponible</span>
                         {% endif %}
                     </div>
 
                     <!-- Fecha subida datos -->
                     <div class="mt-2">
-                        <strong>Fecha subida datos:</strong> {{ resultado.get('fecha_subida_datos', 'N/A') }}
+                        <strong>Fecha subida datos:</strong> {{ resultado.get('fecha_subida_datos')|mostrar_valor }}
                     </div>
 
                 </div>
@@ -142,9 +182,6 @@
     {% else %}
         <div class="alert alert-warning text-center">
             {{ mensaje }}
-        </div>
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-lg btn-outline-primary">⬅ Volver</a>
         </div>
     {% endif %}
     <div class="text-center mt-4">

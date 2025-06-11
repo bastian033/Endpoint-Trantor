@@ -1,13 +1,16 @@
 from flask import Flask, Blueprint, jsonify, request, render_template
 from dotenv import load_dotenv
-from db_destino import conexion_base_datos
+from db import conexion_base_datos
+from db_origen import conexion_base_datos_origen
 import requests
 import os
+from dotenv import load_dotenv
 import unicodedata
 import re
-import datetime
+
 
 db = conexion_base_datos().conexion() 
+db_origen = conexion_base_datos_origen().conexion()
 
 
 load_dotenv()  # Cargar las variables de entorno desde el archivo .env
@@ -64,9 +67,12 @@ def buscar_empresa():
 
     resultados = buscar_en_base_datos(valor)
 
+    revision = db_origen["revisiones"].find_one({"fuente": "datosgob"})
+    fecha_revision = revision["fecha_revision"] if revision else None
+
     if resultados:
-        return render_template("resultados.html", resultados=resultados)
-    return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.")
+        return render_template("resultados.html", resultados=resultados, fecha_revision=fecha_revision)
+    return render_template("resultados.html", resultados=None, mensaje="no se encontraron resultados.",fecha_revision=fecha_revision)
 
 def buscar_en_base_datos(valor):
     resultados_totales = []
@@ -88,14 +94,27 @@ def buscar_en_base_datos(valor):
         return None
 
     try:
-        coleccion = db["empresas"]
-        resultados = list(coleccion.find(filtro).limit(10))  # Limitar resultados
-        print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados)}")
-        for resultado in resultados:
+        coleccion_empresas = db["empresas"]
+        coleccion_empresas_revisadas = db["EmpresasRevisadas"]
+        resultados_empresas = list(coleccion_empresas.find(filtro).limit(10))  # Limitar resultados
+        resultados_empresas_revisadas = list(coleccion_empresas_revisadas.find(filtro).limit(10))  # Limitar resultados
+        print(f"Buscando en empresas - encontrados: {len(resultados_empresas)}")
+        print(f"Buscando en EmpresasRevisadas - encontrados: {len(resultados_empresas_revisadas)}")
+
+        # para la coleccion de empresas
+        for resultado in resultados_empresas:
             resultado["_id"] = str(resultado["_id"])
             resultado_normalizado = {key.lower(): value for key, value in resultado.items()}
+            resultado_normalizado["evaluado_trantor"] = False
             resultados_totales.append(resultado_normalizado)
 
+        # para la coleccion de EmpresasRevisadas
+        for resultado_r in resultados_empresas_revisadas:
+            resultado_r["_id"] = str(resultado_r["_id"])
+            resultado_normalizado = {key.lower(): value for key, value in resultado_r.items()}
+            resultado_normalizado["evaluado_trantor"] = True
+            resultados_totales.append(resultado_normalizado)
+    
         return resultados_totales
 
     except Exception as e:
@@ -106,61 +125,106 @@ def buscar_en_base_datos(valor):
 def normalizar_rut(rut):
     return rut.replace(".", "").replace(" ", "").strip()
 
-# def normalizar_razon_social(razon_social):
-#     razon_social = "".join(
-#         c for c in unicodedata.normalize("NFD", razon_social.lower())
-#         if unicodedata.category(c) != "Mn"
-#     ) 
-#     return razon_social.replace("_", " ") 
+"----------------------------------------------------------------------------------------------------------------"
 
-"----------------------------------------------------------------------------------------------"
-
-
+# Endopoint para que Trantor envie informacion de empresas 
 @empresas.route("/empresa/subir_info/", methods=["POST"])
 def subir_info_empresa():
     datos = request.get_json()
-    coleccion = db["empresas"]
+    coleccion = db["EmpresasRevisadas"]
     campos_faltantes = []
+    
+    # para cargar las variables de entorno desde el archivo .env
+    load_dotenv()
+    api_token = os.getenv("API_TOKEN")
+
+    # para validar los campos obligatorios y que tengan datos
+    for campo in ["rut", "razon_social", "guardar_rutificador", "data"]:
+        if campo not in datos:
+            campos_faltantes.append(campo)
+        elif campo == "guardar_rutificador":
+            if not isinstance(datos[campo], bool):
+                campos_faltantes.append(campo)
+        elif not datos[campo]:
+            campos_faltantes.append(campo) 
+        #     campos_faltantes.append(campo)
+        # elif campo != "guardar_rutificador" and not datos[campo]:
+        #     campos_faltantes.append(campo)
+    if campos_faltantes:
+        return jsonify({"codigo": 400 ,
+                        "estado": "Error, sintaxis incorrecta o datos invalidos",
+                        "mensaje":f"Faltan campos obligatorios: {','.join(campos_faltantes)}"}), 400
+    
+    # para validar que el campo de 'data' tenga al menos una clave
+    if not isinstance(datos["data"], dict) or not datos["data"]:
+        return jsonify({"codigo": 422 ,
+                        "estado": "Error en la semantica", 
+                        "mensaje":f"Se necesita minimo una clave en el campo data: {','.join(datos['data'].keys())}"}), 422
+    
+    # para validar que ninguna clave de dara venga vacia
+    for clave, valor in datos["data"].items():
+        if (valor in ("", None, []) or
+            (isinstance(valor, str) and not valor.strip())
+            ):
+            return jsonify({"codigo": 422,
+                "estado": "Error en la semantica",
+                "mensaje": f"El campo '{clave}' en data no puede estar vacio"}), 422
+
+    # para normalizar el rut
+    rut = datos["rut"].replace(".", "").replace(" ", "").strip()
+
+    # para validar el formato del rut
+    if not re.match(r'^\d{7,8}-[\dkK]$', rut):
+        return jsonify({"codigo": 400 ,
+                        "estado": "Error, sintaxis incorrecta o datos invalidos",
+                        "mensaje":"El formato del RUT es incorrecto."}), 400
+    
+    # para validar el token 
+    token_recibido = request.headers.get("X-TOKEN")
+    if not token_recibido or token_recibido != api_token:
+        return jsonify({"codigo":401,
+                        "estado": "No autorizado",
+                        "mensaje": "Token invalido o no enviado"}), 401
+    
+    rut_empresa_revisada = db["EmpresasRevisadas"].find_one({"rut": rut})
+    if rut_empresa_revisada:
+        return jsonify({"codigo": 409,
+                        "estado": "Conflicto",
+                        "mensaje": f"Ya existe una empresa con el RUT {rut} en la base de datos"}), 409
+    
+    # Buscar datos previos en la colección empresas
+    empresa = db["empresas"].find_one({"rut": rut})
+    datos_previos = None
+    if empresa:
+        empresa["_id"] = str(empresa["_id"])
+        datos_previos = empresa
+
+    doc = {
+        "rut": rut,
+        "razon_social": datos["razon_social"],
+        "guardar_rutificador": datos["guardar_rutificador"],
+        "data": datos["data"]
+    }
 
     try:
-        for campo in ["rut", "razon_social"]:
-            if campo not in datos or not datos[campo]:
-                campos_faltantes.append(campo)
-        
-        if campos_faltantes:
-            return jsonify({"error": f"faltan campos: {', '.join(campos_faltantes)}"}), 400
-
-        razon_social = datos["razon_social"]
-        rut = datos["rut"]
-
-        historia = datos.get("historia", {})
-        historia.setdefault("razon_social", [{
-            "razon_social": razon_social,
-            "vigente": True,
-            "origen": "manual",
-            "fecha_actualizacion": datetime.now().strftime("%d-%m-%Y")
-        }])
-
-        tags = [razon_social]
-        tags2 = razon_social
-
-        doc = {
-            "rut": rut,
-            "tags": tags,
-            "tags2": tags2,
-            "fecha_subida_datos": datetime.now().strftime("%Y-%m-%d"),
-            "historia": historia,
-            "socios": datos.get("socios", []),
-            "representantes_legales": datos.get("representantes_legales", []),
-            "direcciones": datos.get("direcciones", []),
-            "actividades_economicas": datos.get("actividades_economicas", []),
-            "actuacion": datos.get("actuacion", [])
-        }
-
-        resultado = coleccion.insert_one(doc)
-        return jsonify({"Listo!": "Info agregada!"})
-
+        if datos["guardar_rutificador"]:
+            coleccion.insert_one(doc)
+            mensaje = "La informacion fue guardada exitosamente"
+        else:
+            mensaje = "La informacion fue recibida exitosamente pero no se guardo en la base de datos"
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"codigo": 500,
+                        "estado": "Error interno del servidor",
+                        "mensaje": f"Error al insertar en la base de datos: {str(e)}"}), 500
 
+    if datos_previos:
+        return jsonify({"codigo": 200,
+                        "estado": "OK",
+                        "mensaje": mensaje,
+                        "datos_previos": datos_previos}), 200
+    else:
+        return jsonify({"codigo": 200,
+                        "estado": "OK",
+                        "mensaje": f"{mensaje}. Se busco la empresa pero no se encontraron datos previos {rut}"}), 200
 
+ 

@@ -3,7 +3,7 @@ from datetime import datetime
 
 conexion = MongoClient("mongodb://localhost:27017")
 db_origen = conexion["DatosEmpresas"]
-col_origen = db_origen.PUB_NOMBRES_PJ  # Cambia si es necesario
+col_origen = db_origen.PUB_NOMBRES_PJ  #coleccion de razones sociales SII
 
 db_destino = conexion["DatosNormalizados"]
 col_destino = db_destino.empresas
@@ -40,13 +40,13 @@ def mapear_razon_social(doc):
         "fecha_actualizacion": doc.get("FECHA_TG_VIG"),
         "fecha_termino": doc.get("FECHA_FIN_VIG"),
         "origen": "SII",
-        "vigente": None  # Se ajustará después
+        "vigente": None  
     }
 
 procesados = 0
 actualizados = 0
 
-print("Iniciando migración de razones sociales (solo SII, preservando DatosGob históricos)...")
+print("Iniciando migración de razones sociales")
 total_empresas = col_destino.count_documents({})
 print(f"Total de empresas a procesar: {total_empresas}")
 
@@ -82,7 +82,6 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.razon_social": 1}):
             d["vigente"] = False
         razones_sii_final.append(d)
 
-    # 3. Trae razones sociales históricas de DatosGob (si existen)
     razones_destino = empresa.get("historia", {}).get("razon_social", [])
     razones_gob = [
         r for r in razones_destino
@@ -95,7 +94,7 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.razon_social": 1}):
 
     print(f"  Total razones sociales finales para empresa: {len(razones_final)}")
     vigentes = sum(1 for d in razones_final if d.get("vigente"))
-    print(f"  Razones sociales marcadas como vigentes: {vigentes}")
+    print(f"Razones sociales marcadas como vigentes: {vigentes}")
 
     res = col_destino.update_one(
         {"_id": empresa["_id"]},
@@ -109,4 +108,4 @@ for empresa in col_destino.find({}, {"rut": 1, "historia.razon_social": 1}):
 
 print(f"\nEmpresas procesadas: {procesados}")
 print(f"Empresas actualizadas: {actualizados}")
-print("Migración de razones sociales finalizada.")
+print("Migracion de razones sociales finalizada.")

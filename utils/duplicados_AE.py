@@ -56,8 +56,8 @@ def mapear_actividad(doc):
         "fecha_inicio_actividades": doc.get("Fecha inicio de actividades vige") or doc.get("FECHA_INICIO_ACTIVIDADES"),
         "fecha_termino_actividades": doc.get("Fecha término de giro") or doc.get("FECHA_TERMINO_ACTIVIDADES"),
         "origen": "SII",
-        "vigente": None,    # Se ajusta después
-        "principal": None   # Se ajusta después
+        "vigente": None,  
+        "principal": None   
     }
 
 def actividad_vacia(d):
@@ -67,7 +67,7 @@ def actividad_vacia(d):
 procesados = 0
 actualizados = 0
 
-print("Iniciando migración de actividades económicas (deduplicación robusta, por lotes)...")
+print("Iniciando migracion de actividades economicas")
 total_empresas = col_destino.count_documents({})
 print(f"Total de empresas a procesar: {total_empresas}")
 
@@ -95,13 +95,12 @@ for empresa in cursor:
 
     actividades_sii_final = []
     for grupo in grupos.values():
-        # Agrupa por fecha de término
+        # Agrupa por fecha de termino
         subgrupos = {}
         for d in grupo:
             fecha_termino = norm(d.get("fecha_termino_actividades"))
             subgrupos.setdefault(fecha_termino, []).append(d)
         for sub in subgrupos.values():
-            # Si hay varias, elige la de año comercial más reciente, o la primera si no hay
             elegido = sub[0]
             for cand in sub:
                 # Si hay campo "Año comercial", elige el más alto

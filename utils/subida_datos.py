@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from db_destino import conexion_base_datos
+from db import conexion_base_datos
 
 class AddFechaSubidaDatos:
     def __init__(self):
