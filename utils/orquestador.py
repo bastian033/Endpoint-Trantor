@@ -10,16 +10,21 @@ def ejecutar(nombre, comando):
     print(f"--- {nombre} finalizado correctamente ---\n")
 
 if __name__ == "__main__":
-
     # PARA DATOSGOB
-    ejecutar("Scraper DatosGob", ["python", "scrapers/scraper_datosgob.py"])
+    from scrapers.scraper_datosgob import ScraperDatosGob
 
-    ejecutar("Migracion DatosGob", ["python", "utils/migracionDG.py"])
-    
+    scraper = ScraperDatosGob()
+    anios_actualizados = scraper.busqueda()  # Debe retornar lista de años actualizados
+
+    if anios_actualizados:
+        anios_str = ",".join(str(a) for a in anios_actualizados)
+        ejecutar("Migracion DatosGob", ["python", "utils/migracionDG.py", "--anios", anios_str])
+    else:
+        print("No hay años actualizados en DatosGob, omitiendo migración.")
+
 #-----------------------------------------------------------------------------
     # PARA SII
     ejecutar("Migracion SII", ["python", "scrapers/scraper_sii.py"])
-
     ejecutar("Migracion SII", ["python", "utils/migracionSII.py"])
 
     # para las razones sociales
