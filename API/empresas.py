@@ -86,9 +86,13 @@ def buscar_en_base_datos(valor):
         if rut_pattern.match(valor_normalizado):
             filtro = {"rut": valor_normalizado}
         else:
-            valor_escapado = re.escape(valor)
-            filtro = {"tags2": {"$regex": valor_escapado, "$options": "i"}}
-
+            valor_escapado = re.escape(valor) #para que busque literalmente el valor ingresado 
+            filtro = {
+                "$or": [
+                    {"tags2": {"$regex": valor_escapado, "$options": "i"}},
+                    {"razon_social": {"$regex": valor_escapado, "$options": "i"}}
+                ]
+            }
     except Exception as e:
         print(f"Error al construir el filtro: {e}")
         return None
@@ -226,5 +230,3 @@ def subir_info_empresa():
         return jsonify({"codigo": 200,
                         "estado": "OK",
                         "mensaje": f"{mensaje}. Se busco la empresa pero no se encontraron datos previos {rut}"}), 200
-
- 

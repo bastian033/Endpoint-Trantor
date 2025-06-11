@@ -1,7 +1,7 @@
 from pymongo import MongoClient, UpdateOne
 from datetime import datetime
 from db_origen import conexion_base_datos_origen
-from db_destino import conexion_base_datos as conexion_base_datos_destino
+from db import conexion_base_datos as conexion_base_datos_destino
 
 conexion = MongoClient("mongodb://localhost:27018")
 db_origen = conexion["DatosEmpresas"]
