@@ -133,6 +133,17 @@
                         </table>
                         {% endif %}
                     </div>
+                    <!-- Mostrar datos adicionales de EmpresasRevisadas -->
+                    {% if resultado.evaluado_trantor and resultado.get('data') %}
+                    <div class="section-title"><i class="fas fa-database"></i> Datos adicionales</div>
+                    <ul class="list-group mb-2">
+                        {% for clave, valor in resultado.get('data', {}).items() %}
+                        <li class="list-group-item">
+                            <strong>{{ clave|capitalize }}:</strong> {{ valor|mostrar_valor }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
 
                     <!-- Actuaciones -->
                     {% if not resultado.evaluado_trantor %}
