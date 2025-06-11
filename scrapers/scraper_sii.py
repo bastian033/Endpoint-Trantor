@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,12 +10,9 @@ from pymongo import MongoClient
 import shutil
 import requests
 import zipfile
-import os
-import sys
 import re
 from datetime import datetime
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.txt_to_json import transformar_txt_a_json
 
 class SII_Scraper:
