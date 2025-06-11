@@ -7,6 +7,7 @@ COLECCIONES_SII = [
     "PUB_NOM_DOMICILIO",
     "PUB_NOM_ACTECOS",
     "PUB_NOMBRES_PJ",
+    "CODIGO_TIPO_SUBTIPO"
     "Nómina_de_empresas_personas_jurídicas_año_comercial_20202023",
     "Nómina_de_empresas_personas_jurídicas_año_comercial_20152019",
     "Nómina_de_empresas_personas_jurídicas_año_comercial_20102014",
